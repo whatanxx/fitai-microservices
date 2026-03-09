@@ -8,13 +8,13 @@ Serwis odpowiedzialny za integrację z OpenAI i generowanie spersonalizowanych p
 
 - Endpoint `POST /coach/suggest` – generowanie planu treningowego na podstawie danych użytkownika
 - Historia wygenerowanych planów
-- Prompt engineering dla modelu GPT-4o-mini
+- Prompt engineering dla modelu o3-mini
 
 ## Stack
 
 - Python 3.11 + FastAPI
 - OpenAI Python SDK
-- Model: GPT-4o-mini
+- Model: o3-mini
 
 ## Port
 

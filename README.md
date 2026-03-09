@@ -46,7 +46,7 @@ Szczegółowy diagram i opis architektury: [`docs/ARCHITEKTURA.md`](docs/ARCHITE
 | PostgreSQL 15 | Baza danych |
 | Docker + Docker Compose | Konteneryzacja i lokalne środowisko |
 | GitHub Actions | CI/CD |
-| OpenAI API (GPT-4o-mini) | Generowanie planów treningowych |
+| OpenAI API (o3-mini) | Generowanie planów treningowych |
 | JWT (python-jose) | Autoryzacja użytkowników |
 | SQLAlchemy + Alembic | ORM i migracje bazy danych |
 | AWS / GCP | Deploy produkcyjny |

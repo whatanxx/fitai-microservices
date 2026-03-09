@@ -24,7 +24,7 @@
                      │    :5432           │
                      └───────────────────┘
                                                ┌──────────────┐
-                                    OpenAI API │  GPT-4o-mini │
+                                    OpenAI API │  o3-mini      │
                           ┌────────────────────►  External    │
                           │                    └──────────────┘
                 ┌─────────┴────────┐
@@ -49,7 +49,7 @@
 ### AI Coach Service (port 8003)
 - **Technologia:** Python 3.11 + FastAPI + OpenAI SDK
 - **Odpowiedzialność:** Generowanie spersonalizowanych planów treningowych przez OpenAI API, obsługa promptów
-- **Zewnętrzne API:** OpenAI GPT-4o-mini
+- **Zewnętrzne API:** OpenAI o3-mini
 
 ### Frontend (port 3000)
 - **Technologia:** React 18 + Vite
