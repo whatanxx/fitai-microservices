@@ -58,9 +58,9 @@ Szczegółowy diagram i opis architektury: [`docs/ARCHITEKTURA.md`](docs/ARCHITE
 | Osoba | Rola | Zakres |
 |---|---|---|
 | `@whatanxx` | Lead / DevOps | CI/CD, deploy, architektura, code review |
-| Członek 2 | Backend | User Service + Workout Service |
-| Członek 3 | Backend / AI | AI Coach Service + integracja Gemini |
-| Członek 4 | Frontend | React SPA + UI/UX |
+| `@rejmon1` | Backend | User Service + Workout Service |
+| `@RakosIX` | Backend / Tester | AI Coach Service + integracja Gemini |
+| `@dawbie` | Frontend | React SPA + UI/UX |
 
 ---
 
@@ -104,8 +104,8 @@ docker-compose up --build
 
 W projekcie aktywnie korzystamy z narzędzi AI:
 
-- **GitHub Copilot** – podpowiedzi kodu w edytorze, generowanie boilerplate
-- **Cursor** – generowanie szkieletów serwisów i komponentów
+- **GitHub Copilot** – wygenerowanie README, utworzenie struktury projektu
+- **Gemini CLI/Antigravity** – generowanie szkieletów serwisów i komponentów
 - **Google Gemini API** – rdzeń funkcjonalności AI Coach Service (generowanie planów)
 
 Szczegółowe zasady pracy z AI: [`docs/AI_TOOLS.md`](docs/AI_TOOLS.md)
