@@ -33,10 +33,10 @@ W projekcie FitAI aktywnie korzystamy z narzędzi AI na każdym etapie pracy –
 
 ---
 
-## OpenAI API
+## Google Gemini API
 
 ### Zastosowanie w AI Coach Service
-- Model: `o3-mini` (najnowszy lekki model OpenAI)
+- Model: `gemini-2.0-flash` (szybki i wydajny model Google Gemini)
 - Endpoint: `POST /coach/suggest`
 - Działanie: Na podstawie danych użytkownika (wiek, waga, poziom zaawansowania, cel) generuje spersonalizowany plan treningowy
 - Format odpowiedzi: JSON z listą ćwiczeń, zestawami i powtórzeniami

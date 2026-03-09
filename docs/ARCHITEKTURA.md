@@ -24,7 +24,7 @@
                      │    :5432           │
                      └───────────────────┘
                                                ┌──────────────┐
-                                    OpenAI API │  o3-mini      │
+                                    Gemini API  │ gemini-2.0-flash│
                           ┌────────────────────►  External    │
                           │                    └──────────────┘
                 ┌─────────┴────────┐
@@ -47,9 +47,9 @@
 - **Baza danych:** Tabele `workout_plans`, `exercises`, `workout_logs`
 
 ### AI Coach Service (port 8003)
-- **Technologia:** Python 3.11 + FastAPI + OpenAI SDK
-- **Odpowiedzialność:** Generowanie spersonalizowanych planów treningowych przez OpenAI API, obsługa promptów
-- **Zewnętrzne API:** OpenAI o3-mini
+- **Technologia:** Python 3.11 + FastAPI + Google Generative AI SDK
+- **Odpowiedzialność:** Generowanie spersonalizowanych planów treningowych przez Gemini API, obsługa promptów
+- **Zewnętrzne API:** Google Gemini (gemini-2.0-flash)
 
 ### Frontend (port 3000)
 - **Technologia:** React 18 + Vite

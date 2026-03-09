@@ -24,7 +24,7 @@
 
 ## Tydzień 5 – Pozostałe serwisy + AI
 - [ ] Auth Service (JWT)
-- [ ] Integracja OpenAI API (generowanie planów)
+- [ ] Integracja Gemini API (generowanie planów)
 - [ ] Endpoint: POST /coach/suggest
 
 ## Tydzień 6 – Testy i dokumentacja API

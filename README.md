@@ -7,7 +7,7 @@
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)
 ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-CI%2FCD-2088FF?logo=github-actions)
 
-FitAI to aplikacja mikroserwisowa umożliwiająca personalizowane planowanie treningów przy wsparciu sztucznej inteligencji. Użytkownik może rejestrować się, tworzyć plany ćwiczeń oraz korzystać z AI-coacha opartego na OpenAI API, który automatycznie generuje dopasowane plany treningowe. Projekt realizowany w ramach przedmiotu "Budowa i administracja aplikacji w Chmurze".
+FitAI to aplikacja mikroserwisowa umożliwiająca personalizowane planowanie treningów przy wsparciu sztucznej inteligencji. Użytkownik może rejestrować się, tworzyć plany ćwiczeń oraz korzystać z AI-coacha opartego na Gemini API, który automatycznie generuje dopasowane plany treningowe. Projekt realizowany w ramach przedmiotu "Budowa i administracja aplikacji w Chmurze".
 
 ---
 
@@ -15,7 +15,7 @@ FitAI to aplikacja mikroserwisowa umożliwiająca personalizowane planowanie tre
 
 - Rejestracja i logowanie użytkowników z autoryzacją JWT
 - Tworzenie, edytowanie i przeglądanie planów treningowych (CRUD)
-- Generowanie spersonalizowanych planów przez AI-coacha (OpenAI API)
+- Generowanie spersonalizowanych planów przez AI-coacha (Gemini API)
 - Nowoczesny interfejs React SPA
 - Deploy na AWS/GCP z CI/CD przez GitHub Actions
 
@@ -29,7 +29,7 @@ Projekt oparty jest na architekturze mikroserwisowej z czterema głównymi kompo
 |---|---|---|
 | **User Service** | 8001 | Rejestracja, logowanie, zarządzanie użytkownikami, JWT auth |
 | **Workout Service** | 8002 | CRUD planów treningowych i ćwiczeń |
-| **AI Coach Service** | 8003 | Generowanie planów treningowych przez OpenAI API |
+| **AI Coach Service** | 8003 | Generowanie planów treningowych przez Gemini API |
 | **Frontend** | 3000 | React SPA – interfejs użytkownika |
 | **PostgreSQL** | 5432 | Baza danych dla wszystkich serwisów backendowych |
 
@@ -46,7 +46,7 @@ Szczegółowy diagram i opis architektury: [`docs/ARCHITEKTURA.md`](docs/ARCHITE
 | PostgreSQL 15 | Baza danych |
 | Docker + Docker Compose | Konteneryzacja i lokalne środowisko |
 | GitHub Actions | CI/CD |
-| OpenAI API (o3-mini) | Generowanie planów treningowych |
+| Google Gemini API (gemini-2.0-flash) | Generowanie planów treningowych |
 | JWT (python-jose) | Autoryzacja użytkowników |
 | SQLAlchemy + Alembic | ORM i migracje bazy danych |
 | AWS / GCP | Deploy produkcyjny |
@@ -59,7 +59,7 @@ Szczegółowy diagram i opis architektury: [`docs/ARCHITEKTURA.md`](docs/ARCHITE
 |---|---|---|
 | `@whatanxx` | Lead / DevOps | CI/CD, deploy, architektura, code review |
 | Członek 2 | Backend | User Service + Workout Service |
-| Członek 3 | Backend / AI | AI Coach Service + integracja OpenAI |
+| Członek 3 | Backend / AI | AI Coach Service + integracja Gemini |
 | Członek 4 | Frontend | React SPA + UI/UX |
 
 ---
@@ -75,7 +75,7 @@ Szczegółowy harmonogram projektu: [`HARMONOGRAM.md`](HARMONOGRAM.md)
 ### Wymagania
 
 - Docker + Docker Compose
-- Klucz OpenAI API
+- Klucz Gemini API
 
 ### Kroki
 
@@ -84,9 +84,9 @@ Szczegółowy harmonogram projektu: [`HARMONOGRAM.md`](HARMONOGRAM.md)
 git clone https://github.com/whatanxx/fitai-microservices.git
 cd fitai-microservices
 
-# 2. Skopiuj plik konfiguracyjny i uzupełnij klucz OpenAI
+# 2. Skopiuj plik konfiguracyjny i uzupełnij klucz Gemini API
 cp .env.example .env
-# Edytuj .env i wpisz swój OPENAI_API_KEY
+# Edytuj .env i wpisz swój GEMINI_API_KEY
 
 # 3. Uruchom wszystkie serwisy
 docker-compose up --build
@@ -106,7 +106,7 @@ W projekcie aktywnie korzystamy z narzędzi AI:
 
 - **GitHub Copilot** – podpowiedzi kodu w edytorze, generowanie boilerplate
 - **Cursor** – generowanie szkieletów serwisów i komponentów
-- **OpenAI API** – rdzeń funkcjonalności AI Coach Service (generowanie planów)
+- **Google Gemini API** – rdzeń funkcjonalności AI Coach Service (generowanie planów)
 
 Szczegółowe zasady pracy z AI: [`docs/AI_TOOLS.md`](docs/AI_TOOLS.md)
 
