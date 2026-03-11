@@ -24,7 +24,11 @@ const Navbar = () => {
         <ul className="nav-links nav-right">
           {user ? (
             <>
-              <li className="user-info">Cześć, {user.email}</li>
+              <li className="user-info">
+                <Link to="/profile" style={{ color: '#f97316', textDecoration: 'none' }}>
+                  Profil ({user.weight}kg)
+                </Link>
+              </li>
               <li><button className="logout-btn" onClick={handleLogout}>Wyloguj</button></li>
             </>
           ) : (

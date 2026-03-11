@@ -44,7 +44,8 @@ input:focus {
   box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.1);
 }
 
-button[type="submit"] {
+/* GŁÓWNY PRZYCISK (Primary) */
+button {
   padding: 14px;
   background-color: #f97316;
   color: white;
@@ -54,12 +55,34 @@ button[type="submit"] {
   font-size: 1rem;
   font-weight: 700;
   transition: all 0.2s;
+  box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.2);
+  display: inline-block;
+  text-align: center;
 }
 
-button[type="submit"]:hover {
+button:hover {
   background-color: #ea580c;
   transform: translateY(-2px);
   box-shadow: 0 10px 15px -3px rgba(249, 115, 22, 0.3);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+/* PRZYCISK WTÓRNY (Secondary/Outline) */
+.btn-secondary {
+  background-color: transparent;
+  color: #f97316;
+  border: 2px solid #f97316;
+  box-shadow: none;
+}
+
+.btn-secondary:hover {
+  background-color: #fff7ed;
+  color: #ea580c;
+  border-color: #ea580c;
+  box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.1);
 }
 
 .toggle-auth {
@@ -70,6 +93,14 @@ button[type="submit"]:hover {
   text-decoration: underline;
   cursor: pointer;
   padding: 0 4px;
+  box-shadow: none;
+}
+
+.toggle-auth:hover {
+  background: none;
+  transform: none;
+  box-shadow: none;
+  color: #ea580c;
 }
 
 p {

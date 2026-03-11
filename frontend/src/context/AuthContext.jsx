@@ -6,7 +6,16 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
   const login = (userData) => {
-    setUser(userData);
+    // Inicjalizacja z historią (mock danych)
+    setUser({ 
+      ...userData, 
+      weight: 80, 
+      height: 180,
+      history: [
+        { date: '2024-02-11', weight: 82 },
+        { date: '2024-03-11', weight: 80 }
+      ]
+    });
   };
 
   const logout = () => {
@@ -14,11 +23,24 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = (userData) => {
-    setUser(userData);
+    setUser({ 
+      ...userData, 
+      weight: 80, 
+      height: 180,
+      history: [{ date: new Date().toISOString().split('T')[0], weight: 80 }]
+    });
+  };
+
+  const updateProfile = (newData) => {
+    setUser(prev => ({ 
+      ...prev, 
+      ...newData,
+      history: [...prev.history, { date: new Date().toISOString().split('T')[0], weight: newData.weight }]
+    }));
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, register }}>
+    <AuthContext.Provider value={{ user, login, logout, register, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );
