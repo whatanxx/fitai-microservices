@@ -16,7 +16,7 @@ FitAI to aplikacja mikroserwisowa umożliwiająca personalizowane planowanie tre
 - Rejestracja i logowanie użytkowników z autoryzacją JWT
 - Tworzenie, edytowanie i przeglądanie planów treningowych (CRUD)
 - Generowanie spersonalizowanych planów przez AI-coacha (Gemini API)
-- Nowoczesny interfejs React SPA
+- Nowoczesny interfejs React
 - Deploy na AWS/GCP z CI/CD przez GitHub Actions
 
 ---
@@ -30,7 +30,7 @@ Projekt oparty jest na architekturze mikroserwisowej z czterema głównymi kompo
 | **User Service** | 8001 | Rejestracja, logowanie, zarządzanie użytkownikami, JWT auth |
 | **Workout Service** | 8002 | CRUD planów treningowych i ćwiczeń |
 | **AI Coach Service** | 8003 | Generowanie planów treningowych przez Gemini API |
-| **Frontend** | 3000 | React SPA – interfejs użytkownika |
+| **Frontend** | 3000 | React – interfejs użytkownika |
 | **PostgreSQL** | 5432 | Baza danych dla wszystkich serwisów backendowych |
 
 Szczegółowy diagram i opis architektury: [`docs/ARCHITEKTURA.md`](docs/ARCHITEKTURA.md)
@@ -107,7 +107,7 @@ W projekcie aktywnie korzystamy z narzędzi AI:
 - **GitHub Copilot** – wygenerowanie README, utworzenie struktury projektu
 - **Gemini CLI/Antigravity** – generowanie szkieletów serwisów i komponentów
 - **Google Gemini API** – rdzeń funkcjonalności AI Coach Service (generowanie planów)
-
+- **Gemini Web** - wykorzystywanie w przeglądarce do burzy mozgów, generowania instrukcji deploymentu (łatwiej udostępnić)
 Szczegółowe zasady pracy z AI: [`docs/AI_TOOLS.md`](docs/AI_TOOLS.md)
 
 ---
