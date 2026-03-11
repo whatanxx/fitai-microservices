@@ -41,7 +41,11 @@ const LoginPage = () => {
       
       <p>
         {isRegistering ? 'Masz już konto?' : 'Nie masz konta?'}
-        <button className="toggle-auth" onClick={() => setIsRegistering(!isRegistering)}>
+        <button
+          type="button"
+          className="toggle-auth"
+          onClick={() => setIsRegistering(!isRegistering)}
+        >
           {isRegistering ? 'Zaloguj się' : 'Zarejestruj się'}
         </button>
       </p>
