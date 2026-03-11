@@ -6,7 +6,8 @@ import DashboardPage from './pages/DashboardPage';
 import AICoachPage from './pages/AICoachPage';
 import HistoryPage from './pages/HistoryPage';
 import LoginPage from './pages/LoginPage';
-import './App.css';
+import './styles/App.css';
+import './styles/UI.css';
 
 function App() {
   return (

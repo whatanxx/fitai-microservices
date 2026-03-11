@@ -12,13 +12,7 @@ const LoginPage = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     const userData = { email };
-    
-    if (isRegistering) {
-      register(userData);
-    } else {
-      login(userData);
-    }
-    
+    isRegistering ? register(userData) : login(userData);
     navigate('/');
   };
 
@@ -40,21 +34,14 @@ const LoginPage = () => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        {isRegistering && (
-          <input type="password" placeholder="Powtórz hasło" required />
-        )}
         <button type="submit">
           {isRegistering ? 'Stwórz konto' : 'Zaloguj się'}
         </button>
       </form>
       
-      <p style={{ marginTop: '1rem' }}>
+      <p>
         {isRegistering ? 'Masz już konto?' : 'Nie masz konta?'}
-        <button 
-          className="toggle-auth"
-          onClick={() => setIsRegistering(!isRegistering)}
-          style={{ background: 'none', border: 'none', color: '#646cff', cursor: 'pointer', paddingLeft: '5px' }}
-        >
+        <button className="toggle-auth" onClick={() => setIsRegistering(!isRegistering)}>
           {isRegistering ? 'Zaloguj się' : 'Zarejestruj się'}
         </button>
       </p>
