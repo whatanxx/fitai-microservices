@@ -11,7 +11,7 @@ const LoginPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const userData = { email };
+    const userData = { email, password };
     isRegistering ? register(userData) : login(userData);
     navigate('/');
   };
