@@ -60,7 +60,7 @@ Szczegółowy diagram i opis architektury: [`docs/ARCHITEKTURA.md`](docs/ARCHITE
 | [`@whatanxx`](https://github.com/whatanxx) | Lead / DevOps | CI/CD, deploy, architektura, code review |
 | [`@rejmon1`](https://github.com/rejmon1) | Backend | User Service + Workout Service |
 | [`@RakosIX`](https://github.com/RakosIX) | Backend / Tester | AI Coach Service + integracja Gemini |
-| [`@dawbie`](https://github.com/dawbie) | Frontend | React SPA + UI/UX |
+| [`@dawbie`](https://github.com/dawbie) | Frontend | React + UI/UX |
 
 ---
 
