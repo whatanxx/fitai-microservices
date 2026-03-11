@@ -42,7 +42,7 @@ Szczegółowy diagram i opis architektury: [`docs/ARCHITEKTURA.md`](docs/ARCHITE
 | Technologia | Zastosowanie |
 |---|---|
 | Python 3.11 + FastAPI | Backend mikroserwisów |
-| React 18 | Frontend SPA |
+| React 18 | Frontend |
 | PostgreSQL 15 | Baza danych |
 | Docker + Docker Compose | Konteneryzacja i lokalne środowisko |
 | GitHub Actions | CI/CD |
