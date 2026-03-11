@@ -46,7 +46,7 @@ Szczegółowy diagram i opis architektury: [`docs/ARCHITEKTURA.md`](docs/ARCHITE
 | PostgreSQL 15 | Baza danych |
 | Docker + Docker Compose | Konteneryzacja i lokalne środowisko |
 | GitHub Actions | CI/CD |
-| Google Gemini API (gemini-2.0-flash) | Generowanie planów treningowych |
+| Google Gemini API (gemini) | Generowanie planów treningowych |
 | JWT (python-jose) | Autoryzacja użytkowników |
 | SQLAlchemy + Alembic | ORM i migracje bazy danych |
 | AWS / GCP | Deploy produkcyjny |
@@ -57,10 +57,10 @@ Szczegółowy diagram i opis architektury: [`docs/ARCHITEKTURA.md`](docs/ARCHITE
 
 | Osoba | Rola | Zakres |
 |---|---|---|
-| `@whatanxx` | Lead / DevOps | CI/CD, deploy, architektura, code review |
-| `@rejmon1` | Backend | User Service + Workout Service |
-| `@RakosIX` | Backend / Tester | AI Coach Service + integracja Gemini |
-| `@dawbie` | Frontend | React SPA + UI/UX |
+| [`@whatanxx`](https://github.com/whatanxx) | Lead / DevOps | CI/CD, deploy, architektura, code review |
+| [`@rejmon1`](https://github.com/rejmon1) | Backend | User Service + Workout Service |
+| [`@RakosIX`](https://github.com/RakosIX) | Backend / Tester | AI Coach Service + integracja Gemini |
+| [`@dawbie`](https://github.com/dawbie) | Frontend | React SPA + UI/UX |
 
 ---
 
