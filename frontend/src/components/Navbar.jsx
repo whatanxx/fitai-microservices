@@ -29,7 +29,7 @@ const Navbar = () => {
                   Profil ({user.weight}kg)
                 </Link>
               </li>
-              <li><button className="logout-btn" onClick={handleLogout}>Wyloguj</button></li>
+              <li><button type="button" className="logout-btn" onClick={handleLogout}>Wyloguj</button></li>
             </>
           ) : (
             <>
