@@ -4,12 +4,12 @@
 - [x] Wybór tematu: FitAI – Planer treningowy z AI-coachem
 - [x] Utworzenie repo GitHub, podział ról
 - [x] README z opisem projektu i stackiem
-- [ ] Konfiguracja GitHub Copilot / Cursor
+- [x] Konfiguracja GitHub Copilot / Cursor
 
-## Tydzień 2 – Architektura i modele
-- [ ] Diagram mikroserwisów (Miro/draw.io)
-- [ ] Modele danych: User, WorkoutPlan, Exercise, Log
-- [ ] Endpointy REST (OpenAPI draft)
+## Tydzień 2 – Architektura i modele ✅
+- [x] Diagram mikroserwisów (Miro/draw.io)
+- [x] Modele danych: User, WorkoutPlan, Exercise, Log
+- [x] Endpointy REST (OpenAPI draft)
 
 ## Tydzień 3 – Szkielety serwisów
 - [ ] Szkielet User Service (AI-generated)
