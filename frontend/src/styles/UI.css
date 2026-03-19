@@ -27,7 +27,7 @@ form {
   margin: 0 auto;
 }
 
-input {
+input, select {
   padding: 14px 18px;
   border-radius: 12px;
   border: 1px solid #e2e8f0;
@@ -35,9 +35,11 @@ input {
   color: #1e293b;
   font-size: 1rem;
   transition: all 0.2s;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-input:focus {
+input:focus, select:focus {
   outline: none;
   border-color: #f97316;
   background-color: #ffffff;

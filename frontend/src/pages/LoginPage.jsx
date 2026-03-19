@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 
 const LoginPage = () => {
   const [isRegistering, setIsRegistering] = useState(false);
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { login, register } = useAuth();
@@ -11,7 +12,7 @@ const LoginPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const userData = { email, password };
+    const userData = { email, password, name };
     isRegistering ? register(userData) : login(userData);
     navigate('/');
   };
@@ -20,6 +21,15 @@ const LoginPage = () => {
     <div className="page login-page">
       <h1>{isRegistering ? 'Zarejestruj się' : 'Zaloguj się'}</h1>
       <form onSubmit={handleSubmit}>
+        {isRegistering && (
+          <input
+            type="text"
+            placeholder="Imię i nazwisko"
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        )}
         <input 
           type="email" 
           placeholder="Email" 

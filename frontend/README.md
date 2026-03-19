@@ -3,10 +3,10 @@
 Interfejs użytkownika aplikacji FitAI zbudowany jako Single Page Application w React.
 
 ## Aktualny Status Projektu
-✅ **Inicjalizacja:** Projekt zainicjowany przy użyciu Vite + React 19.
+✅ **Inicjalizacja:** Projekt zainicjowany przy użyciu Vite + React 18.
 ✅ **Konfiguracja:** Serwer deweloperski skonfigurowany na porcie `3000`.
 ✅ **Routing:** Skonfigurowano nawigację (React Router) z podziałem na strony.
-✅ **Layout:** Wdrożono responsywny, ciemny interfejs (Mobile-first).
+✅ **Layout:** Wdrożono responsywny, jasny interfejs (Mobile-first).
 
 ## Planowana funkcjonalność (Oryginalne założenia)
 
@@ -24,7 +24,7 @@ Interfejs użytkownika aplikacji FitAI zbudowany jako Single Page Application w 
 
 ## Stack Technologiczny
 
-- **React 19** + **Vite**
+- **React 18** + **Vite**
 - **React Router Dom** (Nawigacja)
 - **Vanilla CSS** (Stylizacja responsywna)
 - Komunikacja z mikroserwisami przez REST API

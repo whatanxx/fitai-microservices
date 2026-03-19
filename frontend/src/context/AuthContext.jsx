@@ -11,6 +11,12 @@ export const AuthProvider = ({ children }) => {
       ...userData, 
       weight: 80, 
       height: 180,
+      age: 25,
+      sex: 'male',
+      goal: 'Budowa masy',
+      equipment: 'gym',
+      trainingDays: 3,
+      level: 'beginner',
       history: [
         { date: '2024-02-11', weight: 82 },
         { date: '2024-03-11', weight: 80 }
@@ -27,6 +33,12 @@ export const AuthProvider = ({ children }) => {
       ...userData, 
       weight: 80, 
       height: 180,
+      age: 25,
+      sex: 'male',
+      goal: '',
+      equipment: 'gym',
+      trainingDays: 3,
+      level: 'beginner',
       history: [{ date: new Date().toISOString().split('T')[0], weight: 80 }]
     });
   };
@@ -35,7 +47,9 @@ export const AuthProvider = ({ children }) => {
     setUser(prev => ({ 
       ...prev, 
       ...newData,
-      history: [...prev.history, { date: new Date().toISOString().split('T')[0], weight: newData.weight }]
+      history: newData.weight != null && newData.weight !== prev.weight
+        ? [...prev.history, { date: new Date().toISOString().split('T')[0], weight: newData.weight }]
+        : prev.history
     }));
   };
 
