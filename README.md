@@ -7,15 +7,15 @@
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)
 ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-CI%2FCD-2088FF?logo=github-actions)
 
-FitAI to aplikacja mikroserwisowa umożliwiająca personalizowane planowanie treningów przy wsparciu sztucznej inteligencji. Użytkownik może rejestrować się, tworzyć plany ćwiczeń oraz korzystać z AI-coacha opartego na Gemini API, który automatycznie generuje dopasowane plany treningowe. Projekt realizowany w ramach przedmiotu "Budowa i administracja aplikacji w Chmurze".
+FitAI to aplikacja mikroserwisowa umożliwiająca personalizowane planowanie treningów przy wsparciu sztucznej inteligencji. Użytkownik zarządza profilem treningowym, a AI Coach automatycznie generuje dopasowany plan i zapisuje go w serwisie planów treningowych. Projekt realizowany w ramach przedmiotu "Budowa i administracja aplikacji w Chmurze".
 
 ---
 
 ## 🎯 Cel projektu
 
-- Rejestracja i logowanie użytkowników z autoryzacją JWT
-- Tworzenie, edytowanie i przeglądanie planów treningowych (CRUD)
-- Generowanie spersonalizowanych planów przez AI-coacha (Gemini API)
+- Zarządzanie profilem użytkownika (dane wejściowe do generowania planu)
+- Przeglądanie i śledzenie realizacji planów treningowych
+- Generowanie spersonalizowanych planów przez AI Coach Service
 - Nowoczesny interfejs React
 - Deploy na AWS/GCP z CI/CD przez GitHub Actions
 
@@ -27,9 +27,9 @@ Projekt oparty jest na architekturze mikroserwisowej z czterema głównymi kompo
 
 | Serwis | Port | Opis |
 |---|---|---|
-| **User Service** | 8001 | Rejestracja, logowanie, zarządzanie użytkownikami, JWT auth |
-| **Workout Service** | 8002 | CRUD planów treningowych i ćwiczeń |
-| **AI Coach Service** | 8003 | Generowanie planów treningowych przez Gemini API |
+| **Profile Service** | 8001 | Zarządzanie profilem użytkownika i danymi fitness |
+| **Workout Plan Service** | 8002 | Zapis i odczyt planów, dni treningowych i ćwiczeń |
+| **AI Coach Service** | 8003 | Orkiestracja generowania planu i zapis do Workout Plan Service |
 | **Frontend** | 3000 | React – interfejs użytkownika |
 | **PostgreSQL** | 5432 | Baza danych dla wszystkich serwisów backendowych |
 
@@ -46,8 +46,7 @@ Szczegółowy diagram i opis architektury: [`docs/ARCHITEKTURA.md`](docs/ARCHITE
 | PostgreSQL 15 | Baza danych |
 | Docker + Docker Compose | Konteneryzacja i lokalne środowisko |
 | GitHub Actions | CI/CD |
-| Google Gemini API (gemini) | Generowanie planów treningowych |
-| JWT (python-jose) | Autoryzacja użytkowników |
+| LLM API (aktualnie OpenAI w diagramie) | Generowanie planów treningowych |
 | SQLAlchemy + Alembic | ORM i migracje bazy danych |
 | AWS / GCP | Deploy produkcyjny |
 
@@ -75,7 +74,7 @@ Szczegółowy harmonogram projektu: [`HARMONOGRAM.md`](HARMONOGRAM.md)
 ### Wymagania
 
 - Docker + Docker Compose
-- Klucz Gemini API
+- Klucz API dostawcy LLM
 
 ### Kroki
 
@@ -84,9 +83,9 @@ Szczegółowy harmonogram projektu: [`HARMONOGRAM.md`](HARMONOGRAM.md)
 git clone https://github.com/whatanxx/fitai-microservices.git
 cd fitai-microservices
 
-# 2. Skopiuj plik konfiguracyjny i uzupełnij klucz Gemini API
+# 2. Skopiuj plik konfiguracyjny i uzupełnij klucz API LLM
 cp .env.example .env
-# Edytuj .env i wpisz swój GEMINI_API_KEY
+# Edytuj .env i wpisz odpowiedni klucz (np. OPENAI_API_KEY)
 
 # 3. Uruchom wszystkie serwisy
 docker-compose up --build
@@ -100,13 +99,25 @@ docker-compose up --build
 
 ---
 
+## 🔐 Strategia autoryzacji (JWT)
+
+JWT nie zostało porzucone - zostało wyjęte z odpowiedzialności serwisów domenowych.
+
+- serwisy domenowe (`profile`, `workout-plan`, `ai-coach`) skupiają się na logice biznesowej,
+- weryfikacja JWT powinna odbywać się na brzegu systemu (API Gateway) lub w dedykowanym Auth Service,
+- do serwisów backendowych przekazywany jest już zweryfikowany kontekst użytkownika (`user_id`, claims).
+
+Takie podejście upraszcza mikroserwisy i ogranicza duplikację logiki bezpieczeństwa.
+
+---
+
 ## 🤖 Narzędzia AI
 
 W projekcie aktywnie korzystamy z narzędzi AI:
 
 - **GitHub Copilot** – wygenerowanie README, utworzenie struktury projektu
 - **Gemini CLI/Antigravity** – generowanie szkieletów serwisów i komponentów
-- **Google Gemini API** – rdzeń funkcjonalności AI Coach Service (generowanie planów)
+- **LLM API (np. OpenAI)** – rdzeń funkcjonalności AI Coach Service (generowanie planów)
 - **Gemini Web** - wykorzystywanie w przeglądarce do burzy mozgów, generowania instrukcji deploymentu (łatwiej udostępnić)
 Szczegółowe zasady pracy z AI: [`docs/AI_TOOLS.md`](docs/AI_TOOLS.md)
 

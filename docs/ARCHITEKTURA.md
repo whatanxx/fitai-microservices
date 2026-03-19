@@ -1,156 +1,139 @@
 # Architektura FitAI
 
-## Diagram przepływu (ASCII)
+## Diagram przeplywu (ASCII)
 
 ```
-                        ┌─────────────┐
-                        │   Frontend  │
-                        │  React SPA  │
-                        │  :3000      │
-                        └──────┬──────┘
-                               │ HTTP
-              ┌────────────────┼────────────────┐
-              │                │                │
-     ┌────────▼──────┐ ┌───────▼───────┐ ┌─────▼───────────┐
-     │  User Service │ │Workout Service│ │AI Coach Service │
-     │  FastAPI      │ │  FastAPI      │ │  FastAPI        │
-     │  :8001        │ │  :8002        │ │  :8003          │
-     └───────┬───────┘ └───────┬───────┘ └────────┬────────┘
-             │                 │                   │
-             └─────────────────┼───────────────────┘
-                               │ SQL
-                     ┌─────────▼─────────┐
-                     │    PostgreSQL      │
-                     │    :5432           │
-                     └───────────────────┘
-                                               ┌──────────────┐
-                                    Gemini API  │ gemini-2.0-flash│
-                          ┌────────────────────►  External    │
-                          │                    └──────────────┘
-                ┌─────────┴────────┐
-                │ AI Coach Service │
-                └──────────────────┘
+                               REST API
+                        +-------------------+
+                        |  React SPA Front  |
+                        +---------+---------+
+                                  |
+            +---------------------+----------------------+
+            |                                            |
+        REST API                                     REST API
+            |                                            |
++-----------v-----------+                    +-----------v-----------+
+|    Profile Service    |                    |   AI Coach Service    |
+|       (port 8001)     |                    |      (port 8003)      |
++-----------+-----------+                    +-----------+-----------+
+            |                                            |
+            | REST API                                   | request/response
+            |                                            |
++-----------v-----------+                    +-----------v-----------+
+| Workout Plan Service  |                    |      OpenAI API       |
+|      (port 8002)      |                    +-----------------------+
++-----------+-----------+
+            |
+            | read/write
+            |
++-----------v-----------+
+|     PostgreSQL DB     |
++-----------------------+
 ```
 
 ---
 
-## Opis mikroserwisów
+## Komponenty systemu
 
-### User Service (port 8001)
-- **Technologia:** Python 3.11 + FastAPI + SQLAlchemy
-- **Odpowiedzialność:** Rejestracja i logowanie użytkowników, zarządzanie profilami, wystawianie tokenów JWT
-- **Baza danych:** Tabela `users`
+### Frontend (React SPA)
+- Odpowiedzialnosc: interfejs uzytkownika oraz wywolywanie endpointow backendowych.
+- Komunikacja: REST API do Profile Service, Workout Plan Service i AI Coach Service.
 
-### Workout Service (port 8002)
-- **Technologia:** Python 3.11 + FastAPI + SQLAlchemy
-- **Odpowiedzialność:** CRUD planów treningowych i ćwiczeń, zarządzanie logami aktywności
-- **Baza danych:** Tabele `workout_plans`, `exercises`, `workout_logs`
+### Profile Service (port 8001)
+- Odpowiedzialnosc: przechowywanie i aktualizacja profilu uzytkownika.
+- Udostepnia dane potrzebne AI do wygenerowania planu.
+
+### Workout Plan Service (port 8002)
+- Odpowiedzialnosc: zapis i odczyt planow treningowych, dni i cwiczen.
+- Obsluguje oznaczanie dni treningowych jako ukonczone.
 
 ### AI Coach Service (port 8003)
-- **Technologia:** Python 3.11 + FastAPI + Google Generative AI SDK
-- **Odpowiedzialność:** Generowanie spersonalizowanych planów treningowych przez Gemini API, obsługa promptów
-- **Zewnętrzne API:** Google Gemini (gemini-2.0-flash)
-
-### Frontend (port 3000)
-- **Technologia:** React 18 + Vite
-- **Odpowiedzialność:** Interfejs użytkownika (SPA), komunikacja z mikroserwisami przez REST API
+- Odpowiedzialnosc: orkiestracja procesu generowania planu.
+- Pobiera dane profilu, wywoluje model LLM, normalizuje JSON i zapisuje plan przez Workout Plan Service.
 
 ### PostgreSQL (port 5432)
-- **Technologia:** PostgreSQL 15
-- **Odpowiedzialność:** Trwałe przechowywanie danych dla wszystkich serwisów backendowych
+- Odpowiedzialnosc: trwale przechowywanie danych profilowych i planow treningowych.
+
+### Zewnetrzny dostawca LLM
+- Aktualny diagram zaklada integracje z OpenAI API.
 
 ---
 
-## Planowane endpointy REST (draft)
+## Kontrakty API
 
-### User Service (`/api/v1`)
-
-| Metoda | Endpoint | Opis |
-|---|---|---|
-| POST | `/auth/register` | Rejestracja nowego użytkownika |
-| POST | `/auth/login` | Logowanie, zwraca JWT |
-| GET | `/users/me` | Dane zalogowanego użytkownika |
-| PUT | `/users/me` | Aktualizacja profilu |
-
-### Workout Service (`/api/v1`)
+### Profile Service
 
 | Metoda | Endpoint | Opis |
 |---|---|---|
-| GET | `/plans` | Lista planów treningowych użytkownika |
-| POST | `/plans` | Utwórz nowy plan |
-| GET | `/plans/{id}` | Pobierz szczegóły planu |
-| PUT | `/plans/{id}` | Aktualizuj plan |
-| DELETE | `/plans/{id}` | Usuń plan |
-| GET | `/exercises` | Lista ćwiczeń |
-| POST | `/exercises` | Dodaj ćwiczenie |
-| POST | `/logs` | Zapisz log aktywności |
-| GET | `/logs` | Historia aktywności |
+| GET | `/health` | Status serwisu (`{"status": "works"}`). |
+| POST | `/profiles` | Tworzy nowy profil uzytkownika. |
+| GET | `/profiles/{user_id}` | Pobiera profil konkretnego uzytkownika. |
+| PUT | `/profiles/{user_id}` | Aktualizuje profil uzytkownika. |
 
-### AI Coach Service (`/api/v1`)
+### Workout Plan Service
 
 | Metoda | Endpoint | Opis |
 |---|---|---|
-| POST | `/coach/suggest` | Generuj plan treningowy przez AI |
-| GET | `/coach/history` | Historia wygenerowanych planów |
+| GET | `/health` | Status serwisu (`{"status": "works"}`). |
+| POST | `/plans` | Tworzy nowy plan (po wygenerowaniu przez AI). |
+| GET | `/plans/user/{user_id}` | Zwraca liste planow uzytkownika (widok listy). |
+| GET | `/plans/{plan_id}` | Zwraca pelny plan z tygodniami, dniami i cwiczeniami. |
+| PATCH | `/days/{day_id}/complete` | Ustawia `is_completed = true` dla dnia treningowego. |
+
+### AI Coach Service
+
+| Metoda | Endpoint | Opis |
+|---|---|---|
+| GET | `/health` | Status serwisu (`{"status": "works"}`). |
+| POST | `/generate/{user_id}` | Glowne wywolanie procesu: profil -> LLM -> zapis planu. |
 
 ---
 
-## Modele danych
+## Model danych
 
-### User
-```json
-{
-  "id": "uuid",
-  "email": "string (unique)",
-  "username": "string",
-  "hashed_password": "string",
-  "age": "integer (optional)",
-  "weight_kg": "float (optional)",
-  "height_cm": "float (optional)",
-  "fitness_level": "enum: beginner | intermediate | advanced",
-  "created_at": "datetime",
-  "updated_at": "datetime"
-}
-```
+### Tabela `UserProfiles`
+- `id` INT PK
+- `age` INT
+- `gender` VARCHAR(10)
+- `height_cm` INT
+- `current_weight_kg` FLOAT
+- `medical_conditions` TEXT
+- `fitness_goal` VARCHAR(45)
+- `training_time_minutes` INT
+- `training_days_per_week` INT
+- `experience_level` VARCHAR(20)
+- `available_equipment` JSON
 
-### WorkoutPlan
-```json
-{
-  "id": "uuid",
-  "user_id": "uuid (FK -> users.id)",
-  "name": "string",
-  "description": "string",
-  "duration_weeks": "integer",
-  "frequency_per_week": "integer",
-  "goal": "enum: weight_loss | muscle_gain | endurance | flexibility",
-  "is_ai_generated": "boolean",
-  "created_at": "datetime",
-  "updated_at": "datetime"
-}
-```
+### Tabela `WorkoutPlans`
+- `id` INT PK
+- `user_id` INT FK -> UserProfiles.id
+- `title` VARCHAR(100)
+- `duration_weeks` INT
+- `created_at` TIMESTAMP
 
-### Exercise
-```json
-{
-  "id": "uuid",
-  "plan_id": "uuid (FK -> workout_plans.id)",
-  "name": "string",
-  "sets": "integer",
-  "reps": "integer",
-  "duration_seconds": "integer (optional)",
-  "muscle_group": "string",
-  "order": "integer"
-}
-```
+### Tabela `WorkoutDays`
+- `id` INT PK
+- `plan_id` INT FK -> WorkoutPlans.id
+- `week_number` INT
+- `day_number` INT
+- `is_rest_day` BOOLEAN
+- `target_muscle_group` VARCHAR(50)
+- `is_completed` BOOLEAN
 
-### WorkoutLog
-```json
-{
-  "id": "uuid",
-  "user_id": "uuid (FK -> users.id)",
-  "plan_id": "uuid (FK -> workout_plans.id)",
-  "completed_at": "datetime",
-  "notes": "string (optional)",
-  "duration_minutes": "integer"
-}
-```
+### Tabela `Exercises`
+- `id` INT PK
+- `day_id` INT FK -> WorkoutDays.id
+- `name` VARCHAR(100)
+- `sets` INT
+- `reps` VARCHAR(10)
+- `rest_time_seconds` INT
+
+---
+
+## Strategia auth (JWT)
+
+JWT pozostaje elementem systemu, ale nie jest duplikowane w kazdym serwisie domenowym.
+
+- Preferowany wariant: walidacja JWT na API Gateway lub w osobnym Auth Service.
+- Serwisy domenowe otrzymuja zweryfikowany kontekst uzytkownika (`user_id`, claims).
+- Zmniejsza to sprzezenie i upraszcza implementacje Profile/Workout/AI Coach Service.
