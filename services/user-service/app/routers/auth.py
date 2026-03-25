@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.auth import create_access_token, hash_password, verify_password
 from app.database import get_db
-from app.models import User
+from app.models import User, UserProfile
 from app.schemas import Token, UserLogin, UserOut, UserRegister
 
 router = APIRouter(prefix="/api/users", tags=["auth"])
@@ -24,6 +24,12 @@ def register(payload: UserRegister, db: Session = Depends(get_db)):
     db.add(user)
     db.commit()
     db.refresh(user)
+
+    # Automatyczne stworzenie pustego profilu
+    profile = UserProfile(user_id=user.id)
+    db.add(profile)
+    db.commit()
+    
     return user
 
 
