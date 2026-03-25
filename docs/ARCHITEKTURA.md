@@ -54,8 +54,19 @@
 ### PostgreSQL (port 5432)
 - Odpowiedzialnosc: trwale przechowywanie danych profilowych i planow treningowych.
 
+### Adminer (port 8080)
+- Narzedzie do zarzadzania baza danych PostgreSQL w srodowisku deweloperskim.
+
 ### Zewnetrzny dostawca LLM
 - Aktualny diagram zaklada integracje z OpenAI API.
+
+---
+
+## Komunikacja
+
+### Frontend -> Backend
+- Frontend komunikuje sie z mikroserwisami za pomoca biblioteki **Axios**.
+- W srodowisku deweloperskim (Docker) wykorzystywane jest **proxy** skonfigurowane w Vite (`vite.config.js`), ktore przekierowuje zapytania `/api` do odpowiednich serwisow (np. `user-service`).
 
 ---
 
@@ -132,8 +143,8 @@
 
 ## Strategia auth (JWT)
 
-JWT pozostaje elementem systemu, ale nie jest duplikowane w kazdym serwisie domenowym.
+System implementuje autentykacje oparta o tokeny JWT (JSON Web Tokens).
 
-- Preferowany wariant: walidacja JWT na API Gateway lub w osobnym Auth Service.
-- Serwisy domenowe otrzymuja zweryfikowany kontekst uzytkownika (`user_id`, claims).
-- Zmniejsza to sprzezenie i upraszcza implementacje Profile/Workout/AI Coach Service.
+- **User Service**: Odpowiada za rejestracje, logowanie oraz generowanie tokenow JWT.
+- **Haszowanie**: Hasla sa przechowywane w postaci zhaszowanej przy uzyciu biblioteki `bcrypt`.
+- **Walidacja**: Inne serwisy moga weryfikowac tokeny JWT w celu autoryzacji uzytkownika.
