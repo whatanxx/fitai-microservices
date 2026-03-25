@@ -1,42 +1,66 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
+import axios from 'axios';
 
 const AuthContext = createContext();
 
+// Bazowa konfiguracja Axios korzystająca z proxy Vite
+const api = axios.create({
+  baseURL: '/api'
+});
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem('token'));
 
-  const login = (userData) => {
-    // Inicjalizacja z historią (mock danych)
-    setUser({ 
-      ...userData, 
-      weight: 80, 
-      height: 180,
-      history: [
-        { date: '2024-02-11', weight: 82 },
-        { date: '2024-03-11', weight: 80 }
-      ]
-    });
+  useEffect(() => {
+    if (token) {
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      // TODO: Możesz dodać pobieranie profilu użytkownika przy odświeżeniu
+    }
+  }, [token]);
+
+  const login = async (userData) => {
+    try {
+      const response = await api.post('/users/login', userData);
+      const { access_token } = response.data;
+      setToken(access_token);
+      localStorage.setItem('token', access_token);
+      setUser({ email: userData.email }); // Proste przypisanie dla widoku
+      return true;
+    } catch (error) {
+      console.error("Login error:", error);
+      return false;
+    }
   };
 
   const logout = () => {
     setUser(null);
+    setToken(null);
+    localStorage.removeItem('token');
+    delete api.defaults.headers.common['Authorization'];
   };
 
-  const register = (userData) => {
-    setUser({ 
-      ...userData, 
-      weight: 80, 
-      height: 180,
-      history: [{ date: new Date().toISOString().split('T')[0], weight: 80 }]
-    });
+  const register = async (userData) => {
+    try {
+      // Rejestracja w user-service
+      await api.post('/users/register', userData);
+      // Po rejestracji od razu logujemy
+      return await login(userData);
+    } catch (error) {
+      console.error("Registration error:", error);
+      return false;
+    }
   };
 
-  const updateProfile = (newData) => {
-    setUser(prev => ({ 
-      ...prev, 
-      ...newData,
-      history: [...prev.history, { date: new Date().toISOString().split('T')[0], weight: newData.weight }]
-    }));
+  const updateProfile = async (newData) => {
+    try {
+      // TODO: Implementacja PUT /profiles/{user_id}
+      setUser(prev => ({ ...prev, ...newData }));
+      return true;
+    } catch (error) {
+      console.error("Update profile error:", error);
+      return false;
+    }
   };
 
   return (
