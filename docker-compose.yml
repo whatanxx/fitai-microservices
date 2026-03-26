@@ -11,6 +11,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fitai -d fitai"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   user-service:
     build: ./services/user-service
@@ -22,7 +27,8 @@ services:
       - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
       - JWT_EXPIRE_MINUTES=${JWT_EXPIRE_MINUTES:-30}
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
   workout-service:
     build: ./services/workout-service
@@ -31,7 +37,8 @@ services:
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
   ai-coach-service:
     build: ./services/ai-coach-service
@@ -39,8 +46,14 @@ services:
       - "8003:8003"
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GCP_PROJECT=${GCP_PROJECT}
+      - GCP_LOCATION=${GCP_LOCATION:-us-central1}
+      - GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/application_default_credentials.json
+    volumes:
+      - ${APPDATA}/gcloud:/root/.config/gcloud:ro
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
   adminer:
     image: adminer

@@ -7,8 +7,16 @@ export default defineConfig({
   server: {
     port: 3000,
     proxy: {
-      '/api': {
+      '/api/users': {
         target: 'http://user-service:8001',
+        changeOrigin: true,
+      },
+      '/api/workouts': {
+        target: 'http://workout-service:8002',
+        changeOrigin: true,
+      },
+      '/api/ai': {
+        target: 'http://ai-coach-service:8003',
         changeOrigin: true,
       },
     },

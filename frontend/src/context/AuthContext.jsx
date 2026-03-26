@@ -3,7 +3,6 @@ import axios from 'axios';
 
 const AuthContext = createContext();
 
-// Bazowa konfiguracja Axios korzystająca z proxy Vite
 const api = axios.create({
   baseURL: '/api'
 });
@@ -11,11 +10,28 @@ const api = axios.create({
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token'));
+  const [loading, setLoading] = useState(true);
+
+  const fetchCurrentUser = async (authToken) => {
+    try {
+      const response = await api.get('/users/me', {
+        headers: { Authorization: `Bearer ${authToken}` }
+      });
+      setUser(response.data);
+    } catch (error) {
+      console.error("Fetch current user error:", error);
+      logout();
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (token) {
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      // TODO: Możesz dodać pobieranie profilu użytkownika przy odświeżeniu
+      fetchCurrentUser(token);
+    } else {
+      setLoading(false);
     }
   }, [token]);
 
@@ -23,9 +39,9 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await api.post('/users/login', userData);
       const { access_token } = response.data;
-      setToken(access_token);
       localStorage.setItem('token', access_token);
-      setUser({ email: userData.email }); // Proste przypisanie dla widoku
+      setToken(access_token);
+      // fetchCurrentUser zostanie wywołane przez useEffect [token]
       return true;
     } catch (error) {
       console.error("Login error:", error);
@@ -42,9 +58,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      // Rejestracja w user-service
       await api.post('/users/register', userData);
-      // Po rejestracji od razu logujemy
       return await login(userData);
     } catch (error) {
       console.error("Registration error:", error);
@@ -52,10 +66,11 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const updateProfile = async (newData) => {
+  const updateProfile = async (profileData) => {
     try {
-      // TODO: Implementacja PUT /profiles/{user_id}
-      setUser(prev => ({ ...prev, ...newData }));
+      if (!user) return false;
+      const response = await api.put(`/users/${user.id}/profile`, profileData);
+      setUser(prev => ({ ...prev, profile: response.data }));
       return true;
     } catch (error) {
       console.error("Update profile error:", error);
@@ -64,8 +79,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, register, updateProfile }}>
-      {children}
+    <AuthContext.Provider value={{ user, token, loading, login, logout, register, updateProfile }}>
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
