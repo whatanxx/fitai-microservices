@@ -175,7 +175,7 @@ async def generate_workout_plan(user_id: int, request: GenerateRequest):
     # 3. Save in Workout Plan Service
     async with httpx.AsyncClient() as http_client:
         try:
-            save_resp = await http_client.post(f"{WORKOUT_SERVICE_URL}/plans", json=workout_plan_data.model_dump())
+            save_resp = await http_client.post(f"{WORKOUT_SERVICE_URL}/api/workouts/plans", json=workout_plan_data.model_dump())
             save_resp.raise_for_status()
             return save_resp.json()
         except httpx.HTTPError as e:

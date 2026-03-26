@@ -31,7 +31,7 @@ app.add_middleware(
 async def health_check():
     return {"status": "works"}
 
-@app.post("/plans", response_model=schemas.WorkoutPlan, status_code=status.HTTP_201_CREATED)
+@app.post("/api/workouts/plans", response_model=schemas.WorkoutPlan, status_code=status.HTTP_201_CREATED)
 async def create_plan(plan: schemas.WorkoutPlanCreate, db: AsyncSession = Depends(get_db)):
     # Create the main plan object
     db_plan = models.WorkoutPlan(
@@ -69,13 +69,13 @@ async def create_plan(plan: schemas.WorkoutPlanCreate, db: AsyncSession = Depend
     await db.refresh(db_plan)
     return db_plan
 
-@app.get("/plans/user/{user_id}", response_model=List[schemas.WorkoutPlan])
+@app.get("/api/workouts/plans/user/{user_id}", response_model=List[schemas.WorkoutPlan])
 async def get_user_plans(user_id: int, db: AsyncSession = Depends(get_db)):
     query = select(models.WorkoutPlan).where(models.WorkoutPlan.user_id == user_id)
     result = await db.execute(query)
     return result.scalars().all()
 
-@app.get("/plans/{plan_id}", response_model=schemas.WorkoutPlanFull)
+@app.get("/api/workouts/plans/{plan_id}", response_model=schemas.WorkoutPlanFull)
 async def get_plan(plan_id: int, db: AsyncSession = Depends(get_db)):
     # Using selectinload to eagerly load nested relationships
     query = select(models.WorkoutPlan).where(models.WorkoutPlan.id == plan_id).options(
@@ -89,7 +89,7 @@ async def get_plan(plan_id: int, db: AsyncSession = Depends(get_db)):
     
     return db_plan
 
-@app.patch("/days/{day_id}/complete", response_model=schemas.WorkoutDay)
+@app.patch("/api/workouts/days/{day_id}/complete", response_model=schemas.WorkoutDay)
 async def complete_day(day_id: int, db: AsyncSession = Depends(get_db)):
     query = select(models.WorkoutDay).where(models.WorkoutDay.id == day_id).options(
         selectinload(models.WorkoutDay.exercises)
