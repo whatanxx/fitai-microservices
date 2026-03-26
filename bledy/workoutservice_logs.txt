@@ -1,0 +1,504 @@
+orkout-service-1  | INFO:     Started server process [1]
+workout-service-1  | INFO:     Waiting for application startup.
+workout-service-1  | 2026-03-26 12:15:05,386 INFO sqlalchemy.engine.Engine select pg_catalog.version()
+workout-service-1  | 2026-03-26 12:15:05,386 INFO sqlalchemy.engine.Engine [raw sql] ()
+workout-service-1  | 2026-03-26 12:15:05,391 INFO sqlalchemy.engine.Engine select current_schema()
+workout-service-1  | 2026-03-26 12:15:05,391 INFO sqlalchemy.engine.Engine [raw sql] ()
+workout-service-1  | 2026-03-26 12:15:05,395 INFO sqlalchemy.engine.Engine show standard_conforming_strings
+workout-service-1  | 2026-03-26 12:15:05,396 INFO sqlalchemy.engine.Engine [raw sql] ()
+workout-service-1  | 2026-03-26 12:15:05,398 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+workout-service-1  | 2026-03-26 12:15:05,403 INFO sqlalchemy.engine.Engine SELECT pg_catalog.pg_class.relname
+workout-service-1  | FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace
+workout-service-1  | WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+workout-service-1  | 2026-03-26 12:15:05,403 INFO sqlalchemy.engine.Engine [generated in 0.00032s] ('workout_plans', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+workout-service-1  | 2026-03-26 12:15:05,418 INFO sqlalchemy.engine.Engine SELECT pg_catalog.pg_class.relname
+workout-service-1  | FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace
+workout-service-1  | WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+workout-service-1  | 2026-03-26 12:15:05,418 INFO sqlalchemy.engine.Engine [cached since 0.01573s ago] ('workout_days', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+workout-service-1  | 2026-03-26 12:15:05,420 INFO sqlalchemy.engine.Engine SELECT pg_catalog.pg_class.relname
+workout-service-1  | FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace
+workout-service-1  | WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+workout-service-1  | 2026-03-26 12:15:05,420 INFO sqlalchemy.engine.Engine [cached since 0.01741s ago] ('exercises', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+workout-service-1  | 2026-03-26 12:15:05,421 INFO sqlalchemy.engine.Engine COMMIT
+workout-service-1  | INFO:     Application startup complete.
+workout-service-1  | INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+workout-service-1  | 2026-03-26 12:16:21,781 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+workout-service-1  | 2026-03-26 12:16:21,782 INFO sqlalchemy.engine.Engine INSERT INTO workout_plans (user_id, title, duration_weeks) VALUES ($1::INTEGER, $2::VARCHAR, $3::INTEGER) RETURNING workout_plans.id, workout_plans.created_at
+workout-service-1  | 2026-03-26 12:16:21,782 INFO sqlalchemy.engine.Engine [generated in 0.00023s] (3, 'Plan Redukcja od AI Coach Gemini 2.5', 1)
+workout-service-1  | 2026-03-26 12:16:21,792 INFO sqlalchemy.engine.Engine INSERT INTO workout_days (plan_id, week_number, day_number, is_rest_day, target_muscle_group, is_completed) VALUES ($1::INTEGER, $2::INTEGER, $3::INTEGER, $4::BOOLEAN, $5::VARCHAR, $6::BOOLEAN) RETURNING workout_days.id
+workout-service-1  | 2026-03-26 12:16:21,793 INFO sqlalchemy.engine.Engine [generated in 0.00022s] (1, 1, 1, False, 'Całe Ciało (Siła A)', False)
+workout-service-1  | 2026-03-26 12:16:21,799 INFO sqlalchemy.engine.Engine INSERT INTO workout_days (plan_id, week_number, day_number, is_rest_day, target_muscle_group, is_completed) VALUES ($1::INTEGER, $2::INTEGER, $3::INTEGER, $4::BOOLEAN, $5::VARCHAR, $6::BOOLEAN) RETURNING workout_days.id
+workout-service-1  | 2026-03-26 12:16:21,800 INFO sqlalchemy.engine.Engine [cached since 0.007193s ago] (1, 1, 2, True, 'Odpoczynek', False)
+workout-service-1  | 2026-03-26 12:16:21,802 INFO sqlalchemy.engine.Engine INSERT INTO exercises (day_id, name, sets, reps, rest_time_seconds) SELECT p0::INTEGER, p1::VARCHAR, p2::INTEGER, p3::VARCHAR, p4::INTEGER FROM (VALUES ($1::INTEGER, $2::VARCHAR, $3::INTEGER, $4::VARCHAR, $5::INTEGER, 0), ($6::INTEGER, $7::VARCHAR, $ ... 428 characters truncated ... (p0, p1, p2, p3, p4, sen_counter) ORDER BY sen_counter RETURNING exercises.id, exercises.id AS id__1
+workout-service-1  | 2026-03-26 12:16:21,803 INFO sqlalchemy.engine.Engine [generated in 0.00014s (insertmanyvalues) 1/1 (ordered)] (1, 'Rozgrzewka dynamiczna (np. pajacyki, krążenia stawów, lekkie skipy)', 1, '5-10 minut', 0, 1, 'Przysiady klasyczne (Squats)', 4, '12-15', 90, 1, 'Pompki (Push-ups)', 4, 'Maksymalna ilość (modyfikacja: na kolanach dla ułatwienia)', 90, 1, 'Wykroki (Lunges)', 3, '10-12 na nogę', 75, 1, 'Wznosy bioder (Glute Bridge)', 3, '15-20', 75, 1, 'Plank (Deska)', 3, '30-60 sekund', 60, 1, 'Unoszenie nóg w leżeniu (Leg Raises)', 3, '15-20', 60)
+workout-service-1  | 2026-03-26 12:16:21,809 INFO sqlalchemy.engine.Engine ROLLBACK
+workout-service-1  | INFO:     172.20.0.5:45126 - "POST /plans HTTP/1.1" 500 Internal Server Error
+workout-service-1  | ERROR:    Exception in ASGI application
+workout-service-1  | Traceback (most recent call last):
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 538, in _prepare_and_execute
+workout-service-1  |     self._rows = await prepared_stmt.fetch(*parameters)
+workout-service-1  |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/asyncpg/prepared_stmt.py", line 176, in fetch
+workout-service-1  |     data = await self.__bind_execute(args, 0, timeout)
+workout-service-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/asyncpg/prepared_stmt.py", line 241, in __bind_execute
+workout-service-1  |     data, status, _ = await self.__do_execute(
+workout-service-1  |                       ^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/asyncpg/prepared_stmt.py", line 230, in __do_execute
+workout-service-1  |     return await executor(protocol)
+workout-service-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "asyncpg/protocol/protocol.pyx", line 207, in bind_execute
+workout-service-1  | asyncpg.exceptions.StringDataRightTruncationError: value too long for type character varying(10)
+workout-service-1  |
+workout-service-1  | The above exception was the direct cause of the following exception:
+workout-service-1  |
+workout-service-1  | Traceback (most recent call last):
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2116, in _exec_insertmany_context
+workout-service-1  |     dialect.do_execute(
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 924, in do_execute
+workout-service-1  |     cursor.execute(statement, parameters)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 572, in execute
+workout-service-1  |     self._adapt_connection.await_(
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 131, in await_only
+workout-service-1  |     return current.driver.switch(awaitable)  # type: ignore[no-any-return]
+workout-service-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 196, in greenlet_spawn
+workout-service-1  |     value = await result
+workout-service-1  |             ^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 550, in _prepare_and_execute
+workout-service-1  |     self._handle_exception(error)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 501, in _handle_exception
+workout-service-1  |     self._adapt_connection._handle_exception(error)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 789, in _handle_exception
+workout-service-1  |     raise translated_error from error
+workout-service-1  | sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.Error: <class 'asyncpg.exceptions.StringDataRightTruncationError'>: value too long for type character varying(10)
+workout-service-1  |
+workout-service-1  | The above exception was the direct cause of the following exception:
+workout-service-1  |
+workout-service-1  | Traceback (most recent call last):
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 411, in run_asgi
+workout-service-1  |     result = await app(  # type: ignore[func-returns-value]
+workout-service-1  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 69, in __call__
+workout-service-1  |     return await self.app(scope, receive, send)
+workout-service-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
+workout-service-1  |     await super().__call__(scope, receive, send)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/applications.py", line 123, in __call__
+workout-service-1  |     await self.middleware_stack(scope, receive, send)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 186, in __call__
+workout-service-1  |     raise exc
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 164, in __call__
+workout-service-1  |     await self.app(scope, receive, _send)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py", line 85, in __call__
+workout-service-1  |     await self.app(scope, receive, send)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 65, in __call__
+workout-service-1  |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+workout-service-1  |     raise exc
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+workout-service-1  |     await app(scope, receive, sender)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 756, in __call__
+workout-service-1  |     await self.middleware_stack(scope, receive, send)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 776, in app
+workout-service-1  |     await route.handle(scope, receive, send)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 297, in handle
+workout-service-1  |     await self.app(scope, receive, send)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 77, in app
+workout-service-1  |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+workout-service-1  |     raise exc
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+workout-service-1  |     await app(scope, receive, sender)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 72, in app
+workout-service-1  |     response = await func(request)
+workout-service-1  |                ^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 278, in app
+workout-service-1  |     raw_response = await run_endpoint_function(
+workout-service-1  |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 191, in run_endpoint_function
+workout-service-1  |     return await dependant.call(**values)
+workout-service-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/app/app/main.py", line 56, in create_plan
+workout-service-1  |     await db.flush() # To get db_day.id
+workout-service-1  |     ^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/ext/asyncio/session.py", line 800, in flush
+workout-service-1  |     await greenlet_spawn(self.sync_session.flush, objects=objects)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 203, in greenlet_spawn
+workout-service-1  |     result = context.switch(value)
+workout-service-1  |              ^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4341, in flush
+workout-service-1  |     self._flush(objects)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4476, in _flush
+workout-service-1  |     with util.safe_reraise():
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/langhelpers.py", line 146, in __exit__
+workout-service-1  |     raise exc_value.with_traceback(exc_tb)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4437, in _flush
+workout-service-1  |     flush_context.execute()
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py", line 466, in execute
+workout-service-1  |     rec.execute(self)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py", line 642, in execute
+workout-service-1  |     util.preloaded.orm_persistence.save_obj(
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py", line 93, in save_obj
+workout-service-1  |     _emit_insert_statements(
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py", line 1143, in _emit_insert_statements
+workout-service-1  |     result = connection.execute(
+workout-service-1  |              ^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1418, in execute
+workout-service-1  |     return meth(
+workout-service-1  |            ^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 515, in _execute_on_connection
+workout-service-1  |     return connection._execute_clauseelement(
+workout-service-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1640, in _execute_clauseelement
+workout-service-1  |     ret = self._execute_context(
+workout-service-1  |           ^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1844, in _execute_context
+workout-service-1  |     return self._exec_insertmany_context(dialect, context)
+workout-service-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2124, in _exec_insertmany_context
+workout-service-1  |     self._handle_dbapi_exception(
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2353, in _handle_dbapi_exception
+workout-service-1  |     raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2116, in _exec_insertmany_context
+workout-service-1  |     dialect.do_execute(
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 924, in do_execute
+workout-service-1  |     cursor.execute(statement, parameters)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 572, in execute
+workout-service-1  |     self._adapt_connection.await_(
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 131, in await_only
+workout-service-1  |     return current.driver.switch(awaitable)  # type: ignore[no-any-return]
+workout-service-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 196, in greenlet_spawn
+workout-service-1  |     value = await result
+workout-service-1  |             ^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 550, in _prepare_and_execute
+workout-service-1  |     self._handle_exception(error)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 501, in _handle_exception
+workout-service-1  |     self._adapt_connection._handle_exception(error)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 789, in _handle_exception
+workout-service-1  |     raise translated_error from error
+workout-service-1  | sqlalchemy.exc.DBAPIError: (sqlalchemy.dialects.postgresql.asyncpg.Error) <class 'asyncpg.exceptions.StringDataRightTruncationError'>: value too long for type character varying(10)
+workout-service-1  | [SQL: INSERT INTO exercises (day_id, name, sets, reps, rest_time_seconds) SELECT p0::INTEGER, p1::VARCHAR, p2::INTEGER, p3::VARCHAR, p4::INTEGER FROM (VALUES ($1::INTEGER, $2::VARCHAR, $3::INTEGER, $4::VARCHAR, $5::INTEGER, 0), ($6::INTEGER, $7::VARCHAR, $ ... 428 characters truncated ... (p0, p1, p2, p3, p4, sen_counter) ORDER BY sen_counter RETURNING exercises.id, exercises.id AS id__1]
+workout-service-1  | [parameters: (1, 'Rozgrzewka dynamiczna (np. pajacyki, krążenia stawów, lekkie skipy)', 1, '5-10 minut', 0, 1, 'Przysiady klasyczne (Squats)', 4, '12-15', 90, 1, 'Pompki (Push-ups)', 4, 'Maksymalna ilość (modyfikacja: na kolanach dla ułatwienia)', 90, 1, 'Wykroki (Lunges)', 3, '10-12 na nogę', 75, 1, 'Wznosy bioder (Glute Bridge)', 3, '15-20', 75, 1, 'Plank (Deska)', 3, '30-60 sekund', 60, 1, 'Unoszenie nóg w leżeniu (Leg Raises)', 3, '15-20', 60)]
+workout-service-1  | (Background on this error at: https://sqlalche.me/e/20/dbapi)
+workout-service-1  | 2026-03-26 12:17:15,442 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+workout-service-1  | 2026-03-26 12:17:15,443 INFO sqlalchemy.engine.Engine INSERT INTO workout_plans (user_id, title, duration_weeks) VALUES ($1::INTEGER, $2::VARCHAR, $3::INTEGER) RETURNING workout_plans.id, workout_plans.created_at
+workout-service-1  | 2026-03-26 12:17:15,443 INFO sqlalchemy.engine.Engine [cached since 53.66s ago] (3, 'Plan Redukcja od AI Coach Gemini 2.5', 1)
+workout-service-1  | 2026-03-26 12:17:15,445 INFO sqlalchemy.engine.Engine INSERT INTO workout_days (plan_id, week_number, day_number, is_rest_day, target_muscle_group, is_completed) VALUES ($1::INTEGER, $2::INTEGER, $3::INTEGER, $4::BOOLEAN, $5::VARCHAR, $6::BOOLEAN) RETURNING workout_days.id
+workout-service-1  | 2026-03-26 12:17:15,445 INFO sqlalchemy.engine.Engine [cached since 53.66s ago] (2, 1, 1, False, 'Całe ciało - siła i wytrzymałość', False)
+workout-service-1  | 2026-03-26 12:17:15,447 INFO sqlalchemy.engine.Engine INSERT INTO workout_days (plan_id, week_number, day_number, is_rest_day, target_muscle_group, is_completed) VALUES ($1::INTEGER, $2::INTEGER, $3::INTEGER, $4::BOOLEAN, $5::VARCHAR, $6::BOOLEAN) RETURNING workout_days.id
+workout-service-1  | 2026-03-26 12:17:15,447 INFO sqlalchemy.engine.Engine [cached since 53.66s ago] (2, 1, 2, False, 'Całe ciało - cardio i core (obwód)', False)
+workout-service-1  | 2026-03-26 12:17:15,449 INFO sqlalchemy.engine.Engine INSERT INTO exercises (day_id, name, sets, reps, rest_time_seconds) SELECT p0::INTEGER, p1::VARCHAR, p2::INTEGER, p3::VARCHAR, p4::INTEGER FROM (VALUES ($1::INTEGER, $2::VARCHAR, $3::INTEGER, $4::VARCHAR, $5::INTEGER, 0), ($6::INTEGER, $7::VARCHAR, $ ... 353 characters truncated ... (p0, p1, p2, p3, p4, sen_counter) ORDER BY sen_counter RETURNING exercises.id, exercises.id AS id__1
+workout-service-1  | 2026-03-26 12:17:15,449 INFO sqlalchemy.engine.Engine [cached since 53.65s ago (insertmanyvalues) 1/1 (ordered)] (3, 'Przysiady (Squats)', 3, '12-15', 75, 3, 'Pompki (Push-ups)', 3, 'Max', 75, 3, 'Wykroki w miejscu (Stationary Lunges)', 3, '10-12 na nogę', 75, 3, 'Plank (Deska)', 3, '45-60 sek.', 60, 3, 'Pompki diamentowe (Diamond Push-ups)', 3, 'Max', 75, 3, 'Mostek biodrowy (Glute Bridge)', 3, '15-20', 60)
+workout-service-1  | 2026-03-26 12:17:15,451 INFO sqlalchemy.engine.Engine ROLLBACK
+workout-service-1  | INFO:     172.20.0.5:59442 - "POST /plans HTTP/1.1" 500 Internal Server Error
+workout-service-1  | ERROR:    Exception in ASGI application
+workout-service-1  | Traceback (most recent call last):
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 538, in _prepare_and_execute
+workout-service-1  |     self._rows = await prepared_stmt.fetch(*parameters)
+workout-service-1  |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/asyncpg/prepared_stmt.py", line 176, in fetch
+workout-service-1  |     data = await self.__bind_execute(args, 0, timeout)
+workout-service-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/asyncpg/prepared_stmt.py", line 241, in __bind_execute
+workout-service-1  |     data, status, _ = await self.__do_execute(
+workout-service-1  |                       ^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/asyncpg/prepared_stmt.py", line 230, in __do_execute
+workout-service-1  |     return await executor(protocol)
+workout-service-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "asyncpg/protocol/protocol.pyx", line 207, in bind_execute
+workout-service-1  | asyncpg.exceptions.StringDataRightTruncationError: value too long for type character varying(10)
+workout-service-1  |
+workout-service-1  | The above exception was the direct cause of the following exception:
+workout-service-1  |
+workout-service-1  | Traceback (most recent call last):
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2116, in _exec_insertmany_context
+workout-service-1  |     dialect.do_execute(
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 924, in do_execute
+workout-service-1  |     cursor.execute(statement, parameters)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 572, in execute
+workout-service-1  |     self._adapt_connection.await_(
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 131, in await_only
+workout-service-1  |     return current.driver.switch(awaitable)  # type: ignore[no-any-return]
+workout-service-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 196, in greenlet_spawn
+workout-service-1  |     value = await result
+workout-service-1  |             ^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 550, in _prepare_and_execute
+workout-service-1  |     self._handle_exception(error)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 501, in _handle_exception
+workout-service-1  |     self._adapt_connection._handle_exception(error)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 789, in _handle_exception
+workout-service-1  |     raise translated_error from error
+workout-service-1  | sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.Error: <class 'asyncpg.exceptions.StringDataRightTruncationError'>: value too long for type character varying(10)
+workout-service-1  |
+workout-service-1  | The above exception was the direct cause of the following exception:
+workout-service-1  |
+workout-service-1  | Traceback (most recent call last):
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 411, in run_asgi
+workout-service-1  |     result = await app(  # type: ignore[func-returns-value]
+workout-service-1  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 69, in __call__
+workout-service-1  |     return await self.app(scope, receive, send)
+workout-service-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
+workout-service-1  |     await super().__call__(scope, receive, send)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/applications.py", line 123, in __call__
+workout-service-1  |     await self.middleware_stack(scope, receive, send)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 186, in __call__
+workout-service-1  |     raise exc
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 164, in __call__
+workout-service-1  |     await self.app(scope, receive, _send)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py", line 85, in __call__
+workout-service-1  |     await self.app(scope, receive, send)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 65, in __call__
+workout-service-1  |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+workout-service-1  |     raise exc
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+workout-service-1  |     await app(scope, receive, sender)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 756, in __call__
+workout-service-1  |     await self.middleware_stack(scope, receive, send)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 776, in app
+workout-service-1  |     await route.handle(scope, receive, send)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 297, in handle
+workout-service-1  |     await self.app(scope, receive, send)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 77, in app
+workout-service-1  |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+workout-service-1  |     raise exc
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+workout-service-1  |     await app(scope, receive, sender)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 72, in app
+workout-service-1  |     response = await func(request)
+workout-service-1  |                ^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 278, in app
+workout-service-1  |     raw_response = await run_endpoint_function(
+workout-service-1  |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 191, in run_endpoint_function
+workout-service-1  |     return await dependant.call(**values)
+workout-service-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/app/app/main.py", line 56, in create_plan
+workout-service-1  |     await db.flush() # To get db_day.id
+workout-service-1  |     ^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/ext/asyncio/session.py", line 800, in flush
+workout-service-1  |     await greenlet_spawn(self.sync_session.flush, objects=objects)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 203, in greenlet_spawn
+workout-service-1  |     result = context.switch(value)
+workout-service-1  |              ^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4341, in flush
+workout-service-1  |     self._flush(objects)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4476, in _flush
+workout-service-1  |     with util.safe_reraise():
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/langhelpers.py", line 146, in __exit__
+workout-service-1  |     raise exc_value.with_traceback(exc_tb)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4437, in _flush
+workout-service-1  |     flush_context.execute()
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py", line 466, in execute
+workout-service-1  |     rec.execute(self)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py", line 642, in execute
+workout-service-1  |     util.preloaded.orm_persistence.save_obj(
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py", line 93, in save_obj
+workout-service-1  |     _emit_insert_statements(
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py", line 1143, in _emit_insert_statements
+workout-service-1  |     result = connection.execute(
+workout-service-1  |              ^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1418, in execute
+workout-service-1  |     return meth(
+workout-service-1  |            ^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 515, in _execute_on_connection
+workout-service-1  |     return connection._execute_clauseelement(
+workout-service-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1640, in _execute_clauseelement
+workout-service-1  |     ret = self._execute_context(
+workout-service-1  |           ^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1844, in _execute_context
+workout-service-1  |     return self._exec_insertmany_context(dialect, context)
+workout-service-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2124, in _exec_insertmany_context
+workout-service-1  |     self._handle_dbapi_exception(
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2353, in _handle_dbapi_exception
+workout-service-1  |     raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2116, in _exec_insertmany_context
+workout-service-1  |     dialect.do_execute(
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 924, in do_execute
+workout-service-1  |     cursor.execute(statement, parameters)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 572, in execute
+workout-service-1  |     self._adapt_connection.await_(
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 131, in await_only
+workout-service-1  |     return current.driver.switch(awaitable)  # type: ignore[no-any-return]
+workout-service-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 196, in greenlet_spawn
+workout-service-1  |     value = await result
+workout-service-1  |             ^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 550, in _prepare_and_execute
+workout-service-1  |     self._handle_exception(error)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 501, in _handle_exception
+workout-service-1  |     self._adapt_connection._handle_exception(error)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 789, in _handle_exception
+workout-service-1  |     raise translated_error from error
+workout-service-1  | sqlalchemy.exc.DBAPIError: (sqlalchemy.dialects.postgresql.asyncpg.Error) <class 'asyncpg.exceptions.StringDataRightTruncationError'>: value too long for type character varying(10)
+workout-service-1  | [SQL: INSERT INTO exercises (day_id, name, sets, reps, rest_time_seconds) SELECT p0::INTEGER, p1::VARCHAR, p2::INTEGER, p3::VARCHAR, p4::INTEGER FROM (VALUES ($1::INTEGER, $2::VARCHAR, $3::INTEGER, $4::VARCHAR, $5::INTEGER, 0), ($6::INTEGER, $7::VARCHAR, $ ... 353 characters truncated ... (p0, p1, p2, p3, p4, sen_counter) ORDER BY sen_counter RETURNING exercises.id, exercises.id AS id__1]
+workout-service-1  | [parameters: (3, 'Przysiady (Squats)', 3, '12-15', 75, 3, 'Pompki (Push-ups)', 3, 'Max', 75, 3, 'Wykroki w miejscu (Stationary Lunges)', 3, '10-12 na nogę', 75, 3, 'Plank (Deska)', 3, '45-60 sek.', 60, 3, 'Pompki diamentowe (Diamond Push-ups)', 3, 'Max', 75, 3, 'Mostek biodrowy (Glute Bridge)', 3, '15-20', 60)]
+workout-service-1  | (Background on this error at: https://sqlalche.me/e/20/dbapi)
+workout-service-1  | 2026-03-26 12:18:46,346 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+workout-service-1  | 2026-03-26 12:18:46,346 INFO sqlalchemy.engine.Engine INSERT INTO workout_plans (user_id, title, duration_weeks) VALUES ($1::INTEGER, $2::VARCHAR, $3::INTEGER) RETURNING workout_plans.id, workout_plans.created_at
+workout-service-1  | 2026-03-26 12:18:46,347 INFO sqlalchemy.engine.Engine [cached since 144.6s ago] (4, 'Plan Redukcja od AI Coach Gemini 2.5', 1)
+workout-service-1  | 2026-03-26 12:18:46,349 INFO sqlalchemy.engine.Engine INSERT INTO workout_days (plan_id, week_number, day_number, is_rest_day, target_muscle_group, is_completed) VALUES ($1::INTEGER, $2::INTEGER, $3::INTEGER, $4::BOOLEAN, $5::VARCHAR, $6::BOOLEAN) RETURNING workout_days.id
+workout-service-1  | 2026-03-26 12:18:46,350 INFO sqlalchemy.engine.Engine [cached since 144.6s ago] (3, 1, 1, False, 'Całe ciało', False)
+workout-service-1  | 2026-03-26 12:18:46,352 INFO sqlalchemy.engine.Engine INSERT INTO workout_days (plan_id, week_number, day_number, is_rest_day, target_muscle_group, is_completed) VALUES ($1::INTEGER, $2::INTEGER, $3::INTEGER, $4::BOOLEAN, $5::VARCHAR, $6::BOOLEAN) RETURNING workout_days.id
+workout-service-1  | 2026-03-26 12:18:46,352 INFO sqlalchemy.engine.Engine [cached since 144.6s ago] (3, 1, 2, False, 'Całe ciało', False)
+workout-service-1  | 2026-03-26 12:18:46,355 INFO sqlalchemy.engine.Engine INSERT INTO exercises (day_id, name, sets, reps, rest_time_seconds) SELECT p0::INTEGER, p1::VARCHAR, p2::INTEGER, p3::VARCHAR, p4::INTEGER FROM (VALUES ($1::INTEGER, $2::VARCHAR, $3::INTEGER, $4::VARCHAR, $5::INTEGER, 0), ($6::INTEGER, $7::VARCHAR, $ ... 353 characters truncated ... (p0, p1, p2, p3, p4, sen_counter) ORDER BY sen_counter RETURNING exercises.id, exercises.id AS id__1
+workout-service-1  | 2026-03-26 12:18:46,355 INFO sqlalchemy.engine.Engine [cached since 144.6s ago (insertmanyvalues) 1/1 (ordered)] (5, 'Przysiady (Squats)', 3, '15-20', 60, 5, 'Pompki (Push-ups)', 3, 'Maksymalna liczba powtórzeń', 60, 5, 'Wykroki (Lunges)', 3, '10-12 na nogę', 60, 5, 'Deska (Plank)', 3, '45-60 sekund', 60, 5, 'Mostki biodrowe (Glute Bridge)', 3, '15-20', 60, 5, 'Wspinaczka górska (Mountain Climbers)', 3, '30-45 sekund', 60)
+workout-service-1  | 2026-03-26 12:18:46,359 INFO sqlalchemy.engine.Engine ROLLBACK
+workout-service-1  | INFO:     172.20.0.5:46814 - "POST /plans HTTP/1.1" 500 Internal Server Error
+workout-service-1  | ERROR:    Exception in ASGI application
+workout-service-1  | Traceback (most recent call last):
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 538, in _prepare_and_execute
+workout-service-1  |     self._rows = await prepared_stmt.fetch(*parameters)
+workout-service-1  |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/asyncpg/prepared_stmt.py", line 176, in fetch
+workout-service-1  |     data = await self.__bind_execute(args, 0, timeout)
+workout-service-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/asyncpg/prepared_stmt.py", line 241, in __bind_execute
+workout-service-1  |     data, status, _ = await self.__do_execute(
+workout-service-1  |                       ^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/asyncpg/prepared_stmt.py", line 230, in __do_execute
+workout-service-1  |     return await executor(protocol)
+workout-service-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "asyncpg/protocol/protocol.pyx", line 207, in bind_execute
+workout-service-1  | asyncpg.exceptions.StringDataRightTruncationError: value too long for type character varying(10)
+workout-service-1  |
+workout-service-1  | The above exception was the direct cause of the following exception:
+workout-service-1  |
+workout-service-1  | Traceback (most recent call last):
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2116, in _exec_insertmany_context
+workout-service-1  |     dialect.do_execute(
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 924, in do_execute
+workout-service-1  |     cursor.execute(statement, parameters)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 572, in execute
+workout-service-1  |     self._adapt_connection.await_(
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 131, in await_only
+workout-service-1  |     return current.driver.switch(awaitable)  # type: ignore[no-any-return]
+workout-service-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 196, in greenlet_spawn
+workout-service-1  |     value = await result
+workout-service-1  |             ^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 550, in _prepare_and_execute
+workout-service-1  |     self._handle_exception(error)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 501, in _handle_exception
+workout-service-1  |     self._adapt_connection._handle_exception(error)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 789, in _handle_exception
+workout-service-1  |     raise translated_error from error
+workout-service-1  | sqlalchemy.dialects.postgresql.asyncpg.AsyncAdapt_asyncpg_dbapi.Error: <class 'asyncpg.exceptions.StringDataRightTruncationError'>: value too long for type character varying(10)
+workout-service-1  |
+workout-service-1  | The above exception was the direct cause of the following exception:
+workout-service-1  |
+workout-service-1  | Traceback (most recent call last):
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 411, in run_asgi
+workout-service-1  |     result = await app(  # type: ignore[func-returns-value]
+workout-service-1  |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 69, in __call__
+workout-service-1  |     return await self.app(scope, receive, send)
+workout-service-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
+workout-service-1  |     await super().__call__(scope, receive, send)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/applications.py", line 123, in __call__
+workout-service-1  |     await self.middleware_stack(scope, receive, send)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 186, in __call__
+workout-service-1  |     raise exc
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/errors.py", line 164, in __call__
+workout-service-1  |     await self.app(scope, receive, _send)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/cors.py", line 85, in __call__
+workout-service-1  |     await self.app(scope, receive, send)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 65, in __call__
+workout-service-1  |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+workout-service-1  |     raise exc
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+workout-service-1  |     await app(scope, receive, sender)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 756, in __call__
+workout-service-1  |     await self.middleware_stack(scope, receive, send)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 776, in app
+workout-service-1  |     await route.handle(scope, receive, send)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 297, in handle
+workout-service-1  |     await self.app(scope, receive, send)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 77, in app
+workout-service-1  |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+workout-service-1  |     raise exc
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+workout-service-1  |     await app(scope, receive, sender)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/starlette/routing.py", line 72, in app
+workout-service-1  |     response = await func(request)
+workout-service-1  |                ^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 278, in app
+workout-service-1  |     raw_response = await run_endpoint_function(
+workout-service-1  |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/fastapi/routing.py", line 191, in run_endpoint_function
+workout-service-1  |     return await dependant.call(**values)
+workout-service-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/app/app/main.py", line 56, in create_plan
+workout-service-1  |     await db.flush() # To get db_day.id
+workout-service-1  |     ^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/ext/asyncio/session.py", line 800, in flush
+workout-service-1  |     await greenlet_spawn(self.sync_session.flush, objects=objects)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 203, in greenlet_spawn
+workout-service-1  |     result = context.switch(value)
+workout-service-1  |              ^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4341, in flush
+workout-service-1  |     self._flush(objects)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4476, in _flush
+workout-service-1  |     with util.safe_reraise():
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/langhelpers.py", line 146, in __exit__
+workout-service-1  |     raise exc_value.with_traceback(exc_tb)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 4437, in _flush
+workout-service-1  |     flush_context.execute()
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py", line 466, in execute
+workout-service-1  |     rec.execute(self)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/unitofwork.py", line 642, in execute
+workout-service-1  |     util.preloaded.orm_persistence.save_obj(
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py", line 93, in save_obj
+workout-service-1  |     _emit_insert_statements(
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/orm/persistence.py", line 1143, in _emit_insert_statements
+workout-service-1  |     result = connection.execute(
+workout-service-1  |              ^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1418, in execute
+workout-service-1  |     return meth(
+workout-service-1  |            ^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 515, in _execute_on_connection
+workout-service-1  |     return connection._execute_clauseelement(
+workout-service-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1640, in _execute_clauseelement
+workout-service-1  |     ret = self._execute_context(
+workout-service-1  |           ^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1844, in _execute_context
+workout-service-1  |     return self._exec_insertmany_context(dialect, context)
+workout-service-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2124, in _exec_insertmany_context
+workout-service-1  |     self._handle_dbapi_exception(
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2353, in _handle_dbapi_exception
+workout-service-1  |     raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2116, in _exec_insertmany_context
+workout-service-1  |     dialect.do_execute(
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 924, in do_execute
+workout-service-1  |     cursor.execute(statement, parameters)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 572, in execute
+workout-service-1  |     self._adapt_connection.await_(
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 131, in await_only
+workout-service-1  |     return current.driver.switch(awaitable)  # type: ignore[no-any-return]
+workout-service-1  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 196, in greenlet_spawn
+workout-service-1  |     value = await result
+workout-service-1  |             ^^^^^^^^^^^^
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 550, in _prepare_and_execute
+workout-service-1  |     self._handle_exception(error)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 501, in _handle_exception
+workout-service-1  |     self._adapt_connection._handle_exception(error)
+workout-service-1  |   File "/usr/local/lib/python3.11/site-packages/sqlalchemy/dialects/postgresql/asyncpg.py", line 789, in _handle_exception
+workout-service-1  |     raise translated_error from error
+workout-service-1  | sqlalchemy.exc.DBAPIError: (sqlalchemy.dialects.postgresql.asyncpg.Error) <class 'asyncpg.exceptions.StringDataRightTruncationError'>: value too long for type character varying(10)
+workout-service-1  | [SQL: INSERT INTO exercises (day_id, name, sets, reps, rest_time_seconds) SELECT p0::INTEGER, p1::VARCHAR, p2::INTEGER, p3::VARCHAR, p4::INTEGER FROM (VALUES ($1::INTEGER, $2::VARCHAR, $3::INTEGER, $4::VARCHAR, $5::INTEGER, 0), ($6::INTEGER, $7::VARCHAR, $ ... 353 characters truncated ... (p0, p1, p2, p3, p4, sen_counter) ORDER BY sen_counter RETURNING exercises.id, exercises.id AS id__1]
+workout-service-1  | [parameters: (5, 'Przysiady (Squats)', 3, '15-20', 60, 5, 'Pompki (Push-ups)', 3, 'Maksymalna liczba powtórzeń', 60, 5, 'Wykroki (Lunges)', 3, '10-12 na nogę', 60, 5, 'Deska (Plank)', 3, '45-60 sekund', 60, 5, 'Mostki biodrowe (Glute Bridge)', 3, '15-20', 60, 5, 'Wspinaczka górska (Mountain Climbers)', 3, '30-45 sekund', 60)]
+workout-service-1  | (Background on this error at: https://sqlalche.me/e/20/dbapi)

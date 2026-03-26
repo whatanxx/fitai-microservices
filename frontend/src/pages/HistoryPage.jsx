@@ -12,14 +12,24 @@ const HistoryPage = () => {
     if (user) {
       const fetchPlans = async () => {
         try {
-          // Pobieranie planów z Workout Service (port 8002)
-          // Dla celów demo używamy user_id = 1
-          const response = await fetch('http://localhost:8002/plans/user/1');
+          // Pobieranie planów z Workout Service przez proxy
+          const response = await fetch(`/api/workouts/plans/user/${user.id}`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
           if (!response.ok) {
             throw new Error('Błąd podczas pobierania historii planów.');
           }
           const data = await response.json();
-          setPlans(data);
+          // Mapowanie danych z mocka na format widoku
+          const formattedPlans = data.map(plan => ({
+            id: plan.id,
+            title: plan.title,
+            created_at: plan.created_at,
+            duration_weeks: plan.duration_weeks
+          }));
+          setPlans(formattedPlans);
         } catch (err) {
           setError(err.message);
         } finally {

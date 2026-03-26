@@ -1,15 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.auth import create_access_token, hash_password, verify_password
+from app.auth import create_access_token, hash_password, verify_password, get_current_user
 from app.database import get_db
 from app.models import User, UserProfile
-from app.schemas import Token, UserLogin, UserOut, UserRegister
+from app.schemas import Token, UserLogin, UserOut, UserRegister, UserWithProfileOut
 
-router = APIRouter(prefix="/api/users", tags=["auth"])
+router = APIRouter(tags=["auth"])
 
-
-@router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
+@router.post("/api/users/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
 def register(payload: UserRegister, db: Session = Depends(get_db)):
     existing = db.query(User).filter(User.email == payload.email).first()
     if existing:
@@ -32,8 +31,7 @@ def register(payload: UserRegister, db: Session = Depends(get_db)):
     
     return user
 
-
-@router.post("/login", response_model=Token)
+@router.post("/api/users/login", response_model=Token)
 def login(payload: UserLogin, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == payload.email).first()
     if not user or not verify_password(payload.password, user.hashed_password):
@@ -49,3 +47,7 @@ def login(payload: UserLogin, db: Session = Depends(get_db)):
         )
     token = create_access_token(subject=str(user.id))
     return Token(access_token=token)
+
+@router.get("/api/users/me", response_model=UserWithProfileOut)
+def get_me(current_user: User = Depends(get_current_user)):
+    return current_user

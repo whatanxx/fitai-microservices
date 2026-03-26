@@ -35,17 +35,22 @@ const AICoachPage = () => {
     setSuccess(false);
 
     try {
-      // Wysłanie prośby do AI Coach Service (port 8003)
-      // Dla celów demo używamy na sztywno user_id = 1
-      const response = await fetch('http://localhost:8003/generate/1', {
+      // Wysłanie prośby do AI Coach Service (port 8003) przez proxy Vite
+      const response = await fetch(`/api/ai/generate/${user.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
+        body: JSON.stringify({
+          goal: goal,
+          days_per_week: parseInt(days)
+        })
       });
 
       if (!response.ok) {
-        throw new Error('Wystąpił błąd podczas generowania planu.');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || 'Wystąpił błąd podczas generowania planu.');
       }
 
       const data = await response.json();
@@ -63,6 +68,8 @@ const AICoachPage = () => {
       setLoading(false);
     }
   };
+
+  const currentWeight = user.profile?.current_weight_kg || '?';
 
   return (
     <div className="page ai-coach-page">
@@ -103,7 +110,7 @@ const AICoachPage = () => {
             disabled={loading}
             style={{ marginTop: '1rem', background: loading ? '#94a3b8' : '#f97316' }}
           >
-            {loading ? '🤖 Generowanie (może potrwać chwilę)...' : `Wygeneruj plan dla ${user.weight}kg`}
+            {loading ? '🤖 Generowanie (może potrwać chwilę)...' : `Wygeneruj plan dla ${currentWeight}kg`}
           </button>
         </form>
       )}
