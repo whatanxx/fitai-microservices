@@ -11,19 +11,19 @@
 - [x] Modele danych: User, WorkoutPlan, Exercise, Log
 - [x] Endpointy REST (OpenAPI draft)
 
-## Tydzień 3 – Szkielety serwisów
-- [ ] Szkielet User Service (AI-generated)
-- [ ] Szkielet Workout Service (AI-generated)
-- [ ] Szkielet AI Coach Service
-- [ ] Dockerfile + docker-compose
+## Tydzień 3 – Szkielety serwisów ✅
+- [x] Szkielet User Service (AI-generated)
+- [x] Szkielet Workout Service (AI-generated)
+- [x] Szkielet AI Coach Service
+- [x] Dockerfile + docker-compose (poprawione i przetestowane)
 
 ## Tydzień 4 – Funkcjonalność podstawowa
 - [ ] CRUD planów treningowych
-- [ ] Baza danych PostgreSQL + migracje
-- [ ] Frontend: lista planów + formularz
+- [x] Baza danych PostgreSQL + migracje + Adminer
+- [x] Frontend: podlaczenie do API (Axios + Proxy)
 
 ## Tydzień 5 – Pozostałe serwisy + AI
-- [ ] Auth Service (JWT)
+- [x] Auth Service (zintegrowany z User Service, JWT + bcrypt)
 - [ ] Integracja Gemini API (generowanie planów)
 - [ ] Endpoint: POST /coach/suggest
 

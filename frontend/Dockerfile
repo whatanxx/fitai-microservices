@@ -1,4 +1,5 @@
-FROM node:20-slim
+# Etap budowania
+FROM node:20-alpine
 
 WORKDIR /app
 
@@ -9,5 +10,5 @@ COPY . .
 
 EXPOSE 3000
 
-# Vite default dev server command
-CMD ["npm", "run", "dev", "--", "--host"]
+# W trybie dev Vite potrzebuje hosta 0.0.0.0
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
