@@ -5,6 +5,7 @@ import Navbar from './components/Navbar';
 import DashboardPage from './pages/DashboardPage';
 import AICoachPage from './pages/AICoachPage';
 import HistoryPage from './pages/HistoryPage';
+import PlanDetailsPage from './pages/PlanDetailsPage';
 import LoginPage from './pages/LoginPage';
 import ProfilePage from './pages/ProfilePage';
 import './styles/App.css';
@@ -21,6 +22,7 @@ function App() {
               <Route path="/" element={<DashboardPage />} />
               <Route path="/ai-coach" element={<AICoachPage />} />
               <Route path="/history" element={<HistoryPage />} />
+              <Route path="/history/:planId" element={<PlanDetailsPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/profile" element={<ProfilePage />} />
             </Routes>

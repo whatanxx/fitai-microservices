@@ -42,6 +42,7 @@ class UserProfile(Base):
     training_days_per_week = Column(Integer, nullable=True)
     experience_level = Column(String(20), nullable=True)
     available_equipment = Column(JSON, nullable=True)
+    weight_history = Column(JSON, nullable=True, default=list)
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     user = relationship("User", back_populates="profile")

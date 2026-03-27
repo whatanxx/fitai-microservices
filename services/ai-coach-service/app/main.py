@@ -95,14 +95,106 @@ class GenerateRequest(BaseModel):
     goal: str
     days_per_week: int
 
+class RefineRequest(BaseModel):
+    prompt: str
+
+class ExplainRequest(BaseModel):
+    exercise_name: str
+
 # Endpoints
 
 @app.get("/health")
 async def health_check():
     return {"status": "works", "model": "gemini-2.5-flash"}
 
+@app.post("/api/ai/explain")
+async def explain_exercise(request: ExplainRequest):
+    if not model:
+        raise HTTPException(status_code=500, detail="AI Model not configured.")
+    
+    try:
+        prompt = f"Jesteś trenerem personalnym. Wyjaśnij krótko (max 3 zdania) jak technicznie poprawnie wykonać ćwiczenie: {request.exercise_name}. Skup się na najważniejszej wskazówce."
+        
+        response = model.generate_content(prompt)
+        return {"explanation": response.text.strip()}
+    except Exception as e:
+        logger.error(f"Explanation failed: {e}")
+        raise HTTPException(status_code=500, detail="Nie udało się wygenerować wyjaśnienia.")
+
+@app.post("/api/ai/refine/{plan_id}")
+async def refine_workout_plan(plan_id: int, request: RefineRequest):
+    # 1. Fetch existing plan
+    async with httpx.AsyncClient() as http_client:
+        try:
+            plan_resp = await http_client.get(f"{WORKOUT_SERVICE_URL}/api/workouts/plans/{plan_id}")
+            plan_resp.raise_for_status()
+            existing_plan = plan_resp.json()
+            
+            # SPRAWDZANIE LIMITU PRZY REFINEMENT (bo tworzy nowy plan)
+            plans_resp = await http_client.get(f"{WORKOUT_SERVICE_URL}/api/workouts/plans/user/{existing_plan['user_id']}")
+            plans_resp.raise_for_status()
+            if len(plans_resp.json()) >= 5:
+                 raise HTTPException(status_code=403, detail="Osiągnięto limit 5 planów. Usuń stary plan przed edycją AI.")
+                 
+        except httpx.HTTPError as e:
+            if isinstance(e, httpx.HTTPStatusError) and e.response.status_code == 403: raise e
+            logger.error(f"Error checking plan: {e}")
+            raise HTTPException(status_code=502, detail=f"Failed to fetch plan: {e}")
+
+    # 2. Refine with Gemini
+    if not model:
+        raise HTTPException(status_code=500, detail="AI Model not configured.")
+
+    try:
+        prompt = f"""
+        Jesteś trenerem personalnym. Masz istniejący plan treningowy:
+        {json.dumps(existing_plan)}
+        
+        Użytkownik chce wprowadzić następujące zmiany: "{request.prompt}"
+        
+        Zwróć NOWY, kompletny obiekt JSON z naniesionymi poprawkami. Zachowaj tę samą strukturę JSON.
+        Zwróć TYLKO czysty obiekt JSON.
+        """
+        
+        if not using_vertex:
+            response = model.generate_content(prompt, generation_config=genai.GenerationConfig(response_mime_type="application/json"))
+        else:
+            response = model.generate_content(prompt, generation_config={"response_mime_type": "application/json"})
+            
+        text_content = response.text.strip()
+        json_data = json.loads(text_content)
+        # Ensure user_id is preserved
+        json_data["user_id"] = existing_plan["user_id"]
+        workout_plan_data = WorkoutPlan.model_validate(json_data)
+        
+    except Exception as e:
+        logger.error(f"Refinement failed: {e}")
+        raise HTTPException(status_code=500, detail=f"AI Error: {str(e)}")
+
+    # 3. Save as a NEW plan (or we could update, but user asked for edit - usually better to save new for history, but user said "edit plan", so let's overwrite or save new? Usually "refine" means update current. But workout-service doesn't have a full update endpoint yet, only title. Let's save as new and user can delete old.)
+    # Actually, let's just use the same create endpoint, it returns a new ID.
+    async with httpx.AsyncClient() as http_client:
+        try:
+            save_resp = await http_client.post(f"{WORKOUT_SERVICE_URL}/api/workouts/plans", json=workout_plan_data.model_dump())
+            save_resp.raise_for_status()
+            # Optionally delete the old plan? Let's leave it for the user.
+            return save_resp.json()
+        except httpx.HTTPError as e:
+            logger.error(f"Save failed: {e}")
+            raise HTTPException(status_code=500, detail=f"Database save error: {str(e)}")
+
 @app.post("/api/ai/generate/{user_id}")
 async def generate_workout_plan(user_id: int, request: GenerateRequest):
+    # 0. Sprawdź limit 5 planów
+    async with httpx.AsyncClient() as http_client:
+        try:
+            plans_resp = await http_client.get(f"{WORKOUT_SERVICE_URL}/api/workouts/plans/user/{user_id}")
+            plans_resp.raise_for_status()
+            if len(plans_resp.json()) >= 5:
+                raise HTTPException(status_code=403, detail="Osiągnięto limit 5 planów. Usuń stary plan, aby stworzyć nowy.")
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code == 403: raise e
+
     # 1. Fetch profile from User Service
     async with httpx.AsyncClient() as http_client:
         try:
