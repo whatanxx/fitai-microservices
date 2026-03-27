@@ -18,7 +18,7 @@ const Navbar = () => {
         <ul className="nav-links nav-left">
           <li><Link to="/">Dashboard</Link></li>
           <li><Link to="/ai-coach">AI-Coach</Link></li>
-          <li><Link to="/history">Historia</Link></li>
+          <li><Link to="/history">Moje Plany</Link></li>
         </ul>
         
         <ul className="nav-links nav-right">

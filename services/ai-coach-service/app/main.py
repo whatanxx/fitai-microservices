@@ -214,32 +214,39 @@ async def generate_workout_plan(user_id: int, request: GenerateRequest):
 
     try:
         prompt = f"""
-        Jesteś trenerem personalnym. Wygeneruj plan treningowy JSON dla:
-        Cel: {fitness_goal}, Dni: {training_days}, Waga: {user_profile.current_weight_kg}kg.
+        Jesteś trenerem personalnym. Wygeneruj plan treningowy JSON na PEŁNE 7 DNI (1 tydzień).
+        Użytkownik chce trenować {training_days} dni w tygodniu. Pozostałe {7 - training_days} dni muszą być oznaczone jako dni odpoczynku (is_rest_day: true).
+        
+        Dane użytkownika:
+        Cel: {fitness_goal}, Waga: {user_profile.current_weight_kg}kg, Poziom: {user_profile.experience_level}.
+        
         Zwróć TYLKO czysty obiekt JSON, bez znaczników ```json. 
-        Struktura:
+        Struktura musi zawierać dokładnie 7 obiektów w tablicy 'days' (day_number od 1 do 7):
         {{
           "user_id": {user_id},
-          "title": "Twój Plan",
+          "title": "{fitness_goal} ({training_days} dni/tydz)",
           "duration_weeks": 1,
           "days": [
             {{
               "week_number": 1,
               "day_number": 1,
               "is_rest_day": false,
-              "target_muscle_group": "Klatka",
+              "target_muscle_group": "Klatka i Triceps",
               "exercises": [
                 {{
-                  "name": "Pompki",
+                  "name": "Wyciskanie hantli",
                   "sets": 3,
                   "reps": "12",
-                  "rest_time_seconds": 60
+                  "rest_time_seconds": 90
                 }}
               ]
-            }}
+            }},
+            // ... i tak dalej aż do dnia 7
           ]
         }}
-        Upewnij się, że pole 'reps' to ZAWSZE krótki ciąg znaków (np. "12-15", "Max"), maksymalnie do 20 znaków!
+        Pamiętaj: 
+        - Jeśli 'is_rest_day' jest true, tablica 'exercises' powinna być pusta [].
+        - Pole 'reps' to ZAWSZE krótki ciąg znaków (np. "12", "8-10", "Max").
         """
         
         if not using_vertex:

@@ -8,41 +8,33 @@ const HistoryPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const fetchPlans = async () => {
+    try {
+      const response = await fetch(`/api/workouts/plans/user/${user.id}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Błąd podczas pobierania planów.');
+      }
+      const data = await response.json();
+      setPlans(data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (user) {
-      const fetchPlans = async () => {
-        try {
-          // Pobieranie planów z Workout Service przez proxy
-          const response = await fetch(`/api/workouts/plans/user/${user.id}`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-          });
-          if (!response.ok) {
-            throw new Error('Błąd podczas pobierania historii planów.');
-          }
-          const data = await response.json();
-          // Mapowanie danych z mocka na format widoku
-          const formattedPlans = data.map(plan => ({
-            id: plan.id,
-            title: plan.title,
-            created_at: plan.created_at,
-            duration_weeks: plan.duration_weeks
-          }));
-          setPlans(formattedPlans);
-        } catch (err) {
-          setError(err.message);
-        } finally {
-          setLoading(false);
-        }
-      };
-
       fetchPlans();
     }
   }, [user]);
 
   const handleDelete = async (e, planId) => {
-    e.preventDefault(); // Zapobiegaj nawigacji do szczegółów
+    e.preventDefault();
     if (!window.confirm('Czy na pewno chcesz usunąć ten plan?')) return;
 
     try {
@@ -53,8 +45,23 @@ const HistoryPage = () => {
         }
       });
       if (!response.ok) throw new Error('Błąd podczas usuwania planu.');
-      
       setPlans(plans.filter(p => p.id !== planId));
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  const handleActivate = async (e, planId) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`/api/workouts/plans/${planId}/activate`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (!response.ok) throw new Error('Błąd podczas aktywacji planu.');
+      fetchPlans(); // Odśwież listę, aby pokazać który jest aktywny
     } catch (err) {
       alert(err.message);
     }
@@ -64,9 +71,9 @@ const HistoryPage = () => {
     return (
       <div className="page" style={{ textAlign: 'center' }}>
         <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>📅</div>
-        <h1>Twoja Historia</h1>
+        <h1>Moje Plany</h1>
         <p style={{ marginBottom: '2rem', fontSize: '1.1rem' }}>
-          Zaloguj się, aby mieć dostęp do pełnego archiwum swoich dotychczasowych treningów.
+          Zaloguj się, aby zarządzać swoimi planami treningowymi.
         </p>
         <Link to="/login">
           <button style={{ padding: '1rem 2.5rem' }}>Zaloguj się teraz</button>
@@ -77,11 +84,11 @@ const HistoryPage = () => {
 
   return (
     <div className="page history-page">
-      <h1>Historia Twoich Planów</h1>
-      <p style={{ marginBottom: '2rem' }}>Lista planów wygenerowanych przez Twojego AI-Coacha.</p>
+      <h1>Moje Plany Treningowe</h1>
+      <p style={{ marginBottom: '2rem' }}>Zarządzaj swoimi planami i wybierz ten, który chcesz obecnie realizować.</p>
       
       {loading ? (
-        <p>Wczytywanie historii...</p>
+        <p>Wczytywanie...</p>
       ) : error ? (
         <p style={{ color: '#dc2626' }}>{error}</p>
       ) : plans.length === 0 ? (
@@ -92,7 +99,7 @@ const HistoryPage = () => {
           </Link>
         </div>
       ) : (
-        <div style={{ width: '100%', textAlign: 'left', display: 'grid', gap: '1rem' }}>
+        <div style={{ width: '100%', textAlign: 'left', display: 'grid', gap: '1.2rem' }}>
           {plans.map((plan) => (
             <Link 
               key={plan.id} 
@@ -103,42 +110,63 @@ const HistoryPage = () => {
                 style={{ 
                   padding: '1.5rem', 
                   background: '#fff', 
-                  borderRadius: '12px', 
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                  borderRadius: '16px', 
+                  boxShadow: plan.is_active ? '0 0 0 2px #f97316, 0 4px 6px -1px rgba(0,0,0,0.1)' : '0 2px 4px rgba(0,0,0,0.05)',
                   border: '1px solid #e2e8f0',
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   cursor: 'pointer',
-                  transition: 'transform 0.2s'
+                  position: 'relative',
+                  overflow: 'hidden'
                 }}
-                onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
               >
-                <div>
+                {plan.is_active && (
+                    <div style={{ 
+                        position: 'absolute', 
+                        top: 0, 
+                        left: 0, 
+                        background: '#f97316', 
+                        color: '#fff', 
+                        fontSize: '0.65rem', 
+                        fontWeight: 'bold', 
+                        padding: '2px 8px',
+                        borderBottomRightRadius: '8px'
+                    }}>
+                        AKTYWNY
+                    </div>
+                )}
+                <div style={{ flex: 1, textAlign: 'left' }}>
                   <h3 style={{ margin: 0, color: '#1e293b' }}>{plan.title}</h3>
-                  <p style={{ margin: '0.25rem 0 0', color: '#64748b', fontSize: '0.9rem' }}>
+                  <p style={{ margin: '0.25rem 0 0', color: '#64748b', fontSize: '0.9rem', textAlign: 'left' }}>
                     Utworzono: {new Date(plan.created_at).toLocaleDateString()}
                   </p>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <span style={{ 
-                    background: '#fef3c7', 
-                    color: '#92400e', 
-                    padding: '0.4rem 0.8rem', 
-                    borderRadius: '20px', 
-                    fontSize: '0.85rem',
-                    fontWeight: '600'
-                  }}>
-                    {plan.duration_weeks} tyg.
-                  </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  {!plan.is_active && (
+                    <button 
+                        onClick={(e) => handleActivate(e, plan.id)}
+                        style={{ 
+                            background: '#fff', 
+                            color: '#f97316', 
+                            padding: '0.5rem 0.8rem', 
+                            borderRadius: '10px',
+                            border: '1px solid #f97316',
+                            fontSize: '0.8rem',
+                            fontWeight: '600',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Aktywuj
+                    </button>
+                  )}
                   <button 
                     onClick={(e) => handleDelete(e, plan.id)}
                     style={{ 
                       background: '#fee2e2', 
                       color: '#ef4444', 
-                      padding: '0.4rem', 
-                      borderRadius: '8px',
+                      padding: '0.5rem', 
+                      borderRadius: '10px',
                       border: 'none',
                       cursor: 'pointer'
                     }}
