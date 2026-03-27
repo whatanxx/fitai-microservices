@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { 
   LineChart, 
@@ -13,35 +13,50 @@ import {
 const ProfilePage = () => {
   const { user, updateProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  const [weight, setWeight] = useState(user?.weight || 0);
-  const [height, setHeight] = useState(user?.height || 0);
+  const [weight, setWeight] = useState(0);
+  const [height, setHeight] = useState(0);
+
+  useEffect(() => {
+    if (user?.profile) {
+      setWeight(user.profile.current_weight_kg || 0);
+      setHeight(user.profile.height_cm || 0);
+    }
+  }, [user]);
 
   if (!user) return <div className="page">Zaloguj się, aby zobaczyć profil.</div>;
 
   const calculateBMI = () => {
-    const hInMeters = user.height / 100;
-    const bmi = (user.weight / (hInMeters * hInMeters)).toFixed(1);
+    const w = user.profile?.current_weight_kg || 0;
+    const h = user.profile?.height_cm || 0;
+    if (w === 0 || h === 0) return { bmi: '?', category: 'Brak danych', color: '#94a3b8' };
+
+    const hInMeters = h / 100;
+    const bmiValue = (w / (hInMeters * hInMeters)).toFixed(1);
     let category = '';
     let color = '';
 
-    if (bmi < 18.5) { category = 'Niedowaga'; color = '#3b82f6'; }
-    else if (bmi < 25) { category = 'W normie'; color = '#10b981'; }
-    else if (bmi < 30) { category = 'Nadwaga'; color = '#f97316'; }
+    if (bmiValue < 18.5) { category = 'Niedowaga'; color = '#3b82f6'; }
+    else if (bmiValue < 25) { category = 'W normie'; color = '#10b981'; }
+    else if (bmiValue < 30) { category = 'Nadwaga'; color = '#f97316'; }
     else { category = 'Otyłość'; color = '#ef4444'; }
 
-    return { bmi, category, color };
+    return { bmi: bmiValue, category, color };
   };
 
   const { bmi, category, color } = calculateBMI();
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    updateProfile({ weight: Number(weight), height: Number(height) });
-    setIsEditing(false);
+    const success = await updateProfile({ 
+      current_weight_kg: Number(weight), 
+      height_cm: Number(height) 
+    });
+    if (success) setIsEditing(false);
   };
 
   // Przygotowanie danych do wykresu (sortowanie po dacie)
-  const chartData = user.history
+  const history = user.profile?.weight_history || [];
+  const chartData = history
     .map(entry => ({
       ...entry,
       dateFormatted: new Date(entry.date).toLocaleDateString('pl-PL', { month: 'short', day: 'numeric' })
@@ -58,11 +73,11 @@ const ProfilePage = () => {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
             <div style={{ padding: '1.2rem', background: '#fff7ed', borderRadius: '16px', border: '1px solid #fed7aa', textAlign: 'center' }}>
               <span style={{ fontSize: '0.85rem', color: '#9a3412', fontWeight: '600', textTransform: 'uppercase' }}>Waga</span>
-              <div style={{ fontSize: '1.75rem', fontWeight: '900', color: '#f97316' }}>{user.weight} <small style={{ fontSize: '1rem' }}>kg</small></div>
+              <div style={{ fontSize: '1.75rem', fontWeight: '900', color: '#f97316' }}>{user.profile?.current_weight_kg || '--'} <small style={{ fontSize: '1rem' }}>kg</small></div>
             </div>
             <div style={{ padding: '1.2rem', background: '#fff7ed', borderRadius: '16px', border: '1px solid #fed7aa', textAlign: 'center' }}>
               <span style={{ fontSize: '0.85rem', color: '#9a3412', fontWeight: '600', textTransform: 'uppercase' }}>Wzrost</span>
-              <div style={{ fontSize: '1.75rem', fontWeight: '900', color: '#f97316' }}>{user.height} <small style={{ fontSize: '1rem' }}>cm</small></div>
+              <div style={{ fontSize: '1.75rem', fontWeight: '900', color: '#f97316' }}>{user.profile?.height_cm || '--'} <small style={{ fontSize: '1rem' }}>cm</small></div>
             </div>
           </div>
 
@@ -79,36 +94,42 @@ const ProfilePage = () => {
               📈 Historia zmian wagi
             </h3>
             <div style={{ width: '100%', height: 250 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis 
-                    dataKey="dateFormatted" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fill: '#94a3b8', fontSize: 12 }}
-                  />
-                  <YAxis 
-                    domain={['auto', 'auto']} 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fill: '#94a3b8', fontSize: 12 }} 
-                    width={35}
-                  />
-                  <Tooltip 
-                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
-                    itemStyle={{ color: '#f97316', fontWeight: 'bold' }}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="weight" 
-                    stroke="#f97316" 
-                    strokeWidth={4} 
-                    dot={{ fill: '#f97316', r: 6, strokeWidth: 2, stroke: '#fff' }}
-                    activeDot={{ r: 8, strokeWidth: 0 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              {chartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis 
+                      dataKey="dateFormatted" 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fill: '#94a3b8', fontSize: 12 }}
+                    />
+                    <YAxis 
+                      domain={['auto', 'auto']} 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fill: '#94a3b8', fontSize: 12 }} 
+                      width={35}
+                    />
+                    <Tooltip 
+                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                      itemStyle={{ color: '#f97316', fontWeight: 'bold' }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="weight" 
+                      stroke="#f97316" 
+                      strokeWidth={4} 
+                      dot={{ fill: '#f97316', r: 6, strokeWidth: 2, stroke: '#fff' }}
+                      activeDot={{ r: 8, strokeWidth: 0 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
+                  Brak danych do wyświetlenia wykresu.
+                </div>
+              )}
             </div>
           </div>
 

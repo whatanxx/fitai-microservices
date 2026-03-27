@@ -50,6 +50,9 @@ const AICoachPage = () => {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        if (response.status === 403) {
+            throw new Error(errorData.detail || 'Osiągnięto limit planów.');
+        }
         throw new Error(errorData.detail || 'Wystąpił błąd podczas generowania planu.');
       }
 
@@ -57,9 +60,9 @@ const AICoachPage = () => {
       console.log('Plan wygenerowany:', data);
       
       setSuccess(true);
-      // Po 2 sekundach przekieruj do historii lub dashboardu
+      // Po 2 sekundach przekieruj do szczegółów planu
       setTimeout(() => {
-        navigate('/history');
+        navigate(`/history/${data.id}`);
       }, 2000);
 
     } catch (err) {

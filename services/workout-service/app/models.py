@@ -35,6 +35,7 @@ class Exercise(Base):
     day_id = Column(Integer, ForeignKey("workout_days.id"))
     name = Column(String(200), nullable=False)
     sets = Column(Integer, nullable=False)
+    completed_sets = Column(Integer, default=0)
     reps = Column(String(100), nullable=False) # Zwiększono z 10 na 100
     rest_time_seconds = Column(Integer, nullable=False)
     

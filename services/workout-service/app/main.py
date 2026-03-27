@@ -77,9 +77,9 @@ async def get_user_plans(user_id: int, db: AsyncSession = Depends(get_db)):
 
 @app.get("/api/workouts/plans/{plan_id}", response_model=schemas.WorkoutPlanFull)
 async def get_plan(plan_id: int, db: AsyncSession = Depends(get_db)):
-    # Using selectinload to eagerly load nested relationships
+    # Using selectinload to eagerly load nested relationships with ordering
     query = select(models.WorkoutPlan).where(models.WorkoutPlan.id == plan_id).options(
-        selectinload(models.WorkoutPlan.days).selectinload(models.WorkoutDay.exercises)
+        selectinload(models.WorkoutPlan.days.and_(True)).selectinload(models.WorkoutDay.exercises.and_(True))
     )
     result = await db.execute(query)
     db_plan = result.scalar_one_or_none()
@@ -87,6 +87,11 @@ async def get_plan(plan_id: int, db: AsyncSession = Depends(get_db)):
     if db_plan is None:
         raise HTTPException(status_code=404, detail="Workout plan not found")
     
+    # Sort results manually to ensure stability if the query loader doesn't
+    db_plan.days.sort(key=lambda x: x.day_number)
+    for day in db_plan.days:
+        day.exercises.sort(key=lambda x: x.id)
+        
     return db_plan
 
 @app.patch("/api/workouts/days/{day_id}/complete", response_model=schemas.WorkoutDay)
@@ -104,6 +109,49 @@ async def complete_day(day_id: int, db: AsyncSession = Depends(get_db)):
     await db.commit()
     await db.refresh(db_day)
     return db_day
+
+@app.patch("/api/workouts/exercises/{exercise_id}/complete-set", response_model=schemas.Exercise)
+async def complete_set(exercise_id: int, db: AsyncSession = Depends(get_db)):
+    query = select(models.Exercise).where(models.Exercise.id == exercise_id)
+    result = await db.execute(query)
+    db_exercise = result.scalar_one_or_none()
+    
+    if db_exercise is None:
+        raise HTTPException(status_code=404, detail="Exercise not found")
+    
+    if db_exercise.completed_sets < db_exercise.sets:
+        db_exercise.completed_sets += 1
+        await db.commit()
+        await db.refresh(db_exercise)
+    
+    return db_exercise
+
+@app.delete("/api/workouts/plans/{plan_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_plan(plan_id: int, db: AsyncSession = Depends(get_db)):
+    query = select(models.WorkoutPlan).where(models.WorkoutPlan.id == plan_id)
+    result = await db.execute(query)
+    db_plan = result.scalar_one_or_none()
+    
+    if db_plan is None:
+        raise HTTPException(status_code=404, detail="Workout plan not found")
+    
+    await db.delete(db_plan)
+    await db.commit()
+    return None
+
+@app.patch("/api/workouts/plans/{plan_id}", response_model=schemas.WorkoutPlan)
+async def update_plan_title(plan_id: int, title: str, db: AsyncSession = Depends(get_db)):
+    query = select(models.WorkoutPlan).where(models.WorkoutPlan.id == plan_id)
+    result = await db.execute(query)
+    db_plan = result.scalar_one_or_none()
+    
+    if db_plan is None:
+        raise HTTPException(status_code=404, detail="Workout plan not found")
+    
+    db_plan.title = title
+    await db.commit()
+    await db.refresh(db_plan)
+    return db_plan
 
 if __name__ == "__main__":
     import uvicorn

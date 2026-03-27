@@ -49,6 +49,7 @@ class UserProfileBase(BaseModel):
     training_days_per_week: Optional[int] = None
     experience_level: Optional[str] = None
     available_equipment: Optional[List[str]] = None
+    weight_history: Optional[List[dict]] = None
 
 
 class UserProfileCreate(UserProfileBase):

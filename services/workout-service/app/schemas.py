@@ -5,6 +5,7 @@ from datetime import datetime
 class ExerciseBase(BaseModel):
     name: str
     sets: int
+    completed_sets: int = 0
     reps: str
     rest_time_seconds: int
 
