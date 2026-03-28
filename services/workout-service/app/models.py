@@ -10,7 +10,9 @@ class WorkoutPlan(Base):
     user_id = Column(Integer, nullable=False)
     title = Column(String(100), nullable=False)
     duration_weeks = Column(Integer, default=1)
+    is_active = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     
     days = relationship("WorkoutDay", back_populates="plan", cascade="all, delete-orphan")
 

@@ -37,7 +37,8 @@ async def create_plan(plan: schemas.WorkoutPlanCreate, db: AsyncSession = Depend
     db_plan = models.WorkoutPlan(
         user_id=plan.user_id,
         title=plan.title,
-        duration_weeks=plan.duration_weeks
+        duration_weeks=plan.duration_weeks,
+        is_active=plan.is_active
     )
     db.add(db_plan)
     await db.flush() # To get db_plan.id
@@ -75,6 +76,8 @@ async def get_user_plans(user_id: int, db: AsyncSession = Depends(get_db)):
     result = await db.execute(query)
     return result.scalars().all()
 
+from datetime import datetime, timezone
+
 @app.get("/api/workouts/plans/{plan_id}", response_model=schemas.WorkoutPlanFull)
 async def get_plan(plan_id: int, db: AsyncSession = Depends(get_db)):
     # Using selectinload to eagerly load nested relationships with ordering
@@ -86,6 +89,21 @@ async def get_plan(plan_id: int, db: AsyncSession = Depends(get_db)):
     
     if db_plan is None:
         raise HTTPException(status_code=404, detail="Workout plan not found")
+
+    # TYGODNIOWY RESET LOGIC
+    now = datetime.now(timezone.utc)
+    # Check if the plan was updated in a different ISO week than today
+    if db_plan.updated_at.isocalendar()[1] != now.isocalendar()[1]:
+        # Reset all days and exercises for this plan
+        for day in db_plan.days:
+            day.is_completed = False
+            for exercise in day.exercises:
+                exercise.completed_sets = 0
+        
+        # Explicitly update the timestamp to now so we don't reset again this week
+        db_plan.updated_at = now
+        await db.commit()
+        await db.refresh(db_plan)
     
     # Sort results manually to ensure stability if the query loader doesn't
     db_plan.days.sort(key=lambda x: x.day_number)
@@ -149,6 +167,30 @@ async def update_plan_title(plan_id: int, title: str, db: AsyncSession = Depends
         raise HTTPException(status_code=404, detail="Workout plan not found")
     
     db_plan.title = title
+    await db.commit()
+    await db.refresh(db_plan)
+    return db_plan
+
+@app.patch("/api/workouts/plans/{plan_id}/activate", response_model=schemas.WorkoutPlan)
+async def activate_plan(plan_id: int, db: AsyncSession = Depends(get_db)):
+    # 1. Get the plan to activate
+    query = select(models.WorkoutPlan).where(models.WorkoutPlan.id == plan_id)
+    result = await db.execute(query)
+    db_plan = result.scalar_one_or_none()
+    
+    if db_plan is None:
+        raise HTTPException(status_code=404, detail="Workout plan not found")
+    
+    # 2. Deactivate all other plans for this user
+    from sqlalchemy import update
+    deactivate_query = update(models.WorkoutPlan).where(
+        models.WorkoutPlan.user_id == db_plan.user_id,
+        models.WorkoutPlan.id != plan_id
+    ).values(is_active=False)
+    await db.execute(deactivate_query)
+    
+    # 3. Activate this plan
+    db_plan.is_active = True
     await db.commit()
     await db.refresh(db_plan)
     return db_plan
