@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 
 const AICoachPage = () => {
   const { user } = useAuth();
+  const { addNotification } = useNotification();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
   // Form states
@@ -31,11 +32,9 @@ const AICoachPage = () => {
   const handleGenerate = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
     setSuccess(false);
 
     try {
-      // Wysłanie prośby do AI Coach Service (port 8003) przez proxy Vite
       const response = await fetch(`/api/ai/generate/${user.id}`, {
         method: 'POST',
         headers: {
@@ -51,22 +50,23 @@ const AICoachPage = () => {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         if (response.status === 403) {
-            throw new Error(errorData.detail || 'Osiągnięto limit planów.');
+            addNotification('Osiągnięto limit 5 planów. Usuń stary plan przed wygenerowaniem nowego.', 'error');
+            setLoading(false);
+            return;
         }
         throw new Error(errorData.detail || 'Wystąpił błąd podczas generowania planu.');
       }
 
       const data = await response.json();
-      console.log('Plan wygenerowany:', data);
-      
       setSuccess(true);
-      // Po 2 sekundach przekieruj do szczegółów planu
+      addNotification('Plan treningowy wygenerowany pomyślnie! 🚀', 'success');
+      
       setTimeout(() => {
         navigate(`/history/${data.id}`);
-      }, 2000);
+      }, 1500);
 
     } catch (err) {
-      setError(err.message);
+      addNotification(err.message, 'error');
     } finally {
       setLoading(false);
     }
@@ -105,8 +105,6 @@ const AICoachPage = () => {
             onChange={(e) => setDays(e.target.value)}
             required
           />
-
-          {error && <p style={{ color: '#dc2626', marginTop: '1rem' }}>{error}</p>}
 
           <button 
             type="submit" 

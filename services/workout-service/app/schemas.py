@@ -40,6 +40,7 @@ class WorkoutPlanBase(BaseModel):
     title: str
     duration_weeks: int
     is_active: bool = False
+    is_published: bool = False
 
 class WorkoutPlanCreate(WorkoutPlanBase):
     days: List[WorkoutDayCreate]
@@ -47,7 +48,6 @@ class WorkoutPlanCreate(WorkoutPlanBase):
 class WorkoutPlan(WorkoutPlanBase):
     id: int
     created_at: datetime
-    is_active: bool
     
     model_config = ConfigDict(from_attributes=True)
 

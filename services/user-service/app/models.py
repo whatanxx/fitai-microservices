@@ -32,10 +32,13 @@ class UserProfile(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False)
+    first_name = Column(String(100), nullable=True)
+    nickname = Column(String(100), nullable=True)
     age = Column(Integer, nullable=True)
     gender = Column(String(10), nullable=True)
     height_cm = Column(Integer, nullable=True)
     current_weight_kg = Column(Float, nullable=True)
+
     medical_conditions = Column(Text, nullable=True)
     fitness_goal = Column(String(45), nullable=True)
     training_time_minutes = Column(Integer, nullable=True)

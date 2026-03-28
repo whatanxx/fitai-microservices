@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 
 const HistoryPage = () => {
   const { user } = useAuth();
+  const { addNotification } = useNotification();
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -16,12 +18,13 @@ const HistoryPage = () => {
         }
       });
       if (!response.ok) {
-        throw new Error('Błąd podczas pobierania planów.');
+        throw new Error('Nie udało się pobrać Twoich planów.');
       }
       const data = await response.json();
       setPlans(data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
     } catch (err) {
       setError(err.message);
+      addNotification(err.message, 'error');
     } finally {
       setLoading(false);
     }
@@ -35,6 +38,7 @@ const HistoryPage = () => {
 
   const handleDelete = async (e, planId) => {
     e.preventDefault();
+    e.stopPropagation();
     if (!window.confirm('Czy na pewno chcesz usunąć ten plan?')) return;
 
     try {
@@ -46,13 +50,15 @@ const HistoryPage = () => {
       });
       if (!response.ok) throw new Error('Błąd podczas usuwania planu.');
       setPlans(plans.filter(p => p.id !== planId));
+      addNotification('Plan został usunięty.', 'info');
     } catch (err) {
-      alert(err.message);
+      addNotification(err.message, 'error');
     }
   };
 
   const handleActivate = async (e, planId) => {
     e.preventDefault();
+    e.stopPropagation();
     try {
       const response = await fetch(`/api/workouts/plans/${planId}/activate`, {
         method: 'PATCH',
@@ -60,10 +66,11 @@ const HistoryPage = () => {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
-      if (!response.ok) throw new Error('Błąd podczas aktywacji planu.');
-      fetchPlans(); // Odśwież listę, aby pokazać który jest aktywny
+      if (!response.ok) throw new Error('Nie udało się aktywować planu.');
+      addNotification('Plan został aktywowany!', 'success');
+      fetchPlans(); 
     } catch (err) {
-      alert(err.message);
+      addNotification(err.message, 'error');
     }
   };
 
@@ -134,6 +141,23 @@ const HistoryPage = () => {
                         borderBottomRightRadius: '8px'
                     }}>
                         AKTYWNY
+                    </div>
+                )}
+                {plan.is_published && (
+                    <div style={{ 
+                        position: 'absolute', 
+                        top: 0, 
+                        right: plan.is_active ? 0 : 'auto', 
+                        left: plan.is_active ? 'auto' : 0,
+                        background: '#22c55e', 
+                        color: '#fff', 
+                        fontSize: '0.65rem', 
+                        fontWeight: 'bold', 
+                        padding: '2px 8px',
+                        borderBottomLeftRadius: plan.is_active ? '8px' : '0',
+                        borderBottomRightRadius: plan.is_active ? '0' : '8px'
+                    }}>
+                        PUBLICZNY
                     </div>
                 )}
                 <div style={{ flex: 1, textAlign: 'left' }}>

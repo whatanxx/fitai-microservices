@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 
 const DashboardPage = () => {
   const { user } = useAuth();
+  const { addNotification } = useNotification();
   const [activePlan, setActivePlan] = useState(null);
   const [todayWorkout, setTodayWorkout] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -20,13 +22,10 @@ const DashboardPage = () => {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
-      if (!response.ok) throw new Error('Błąd pobierania planów.');
+      if (!response.ok) throw new Error('Nie udało się pobrać danych treningowych.');
       const plans = await response.json();
       
       let planToUse = plans.find(p => p.is_active);
-      if (!planToUse && plans.length > 0) {
-        planToUse = plans.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
-      }
 
       if (planToUse) {
         const fullPlanResp = await fetch(`/api/workouts/plans/${planToUse.id}`, {
@@ -44,6 +43,7 @@ const DashboardPage = () => {
       }
     } catch (err) {
       setError(err.message);
+      addNotification(err.message, 'error');
     } finally {
       setLoading(false);
     }
@@ -130,11 +130,12 @@ const DashboardPage = () => {
   if (!user) return <div className="page">Zaloguj się.</div>;
 
   const dayNames = ["Pon", "Wt", "Śr", "Czw", "Pt", "Sob", "Ndz"];
+  const displayName = user.profile?.nickname || user.profile?.first_name || user.email.split('@')[0];
 
   return (
     <div className="page dashboard-page" style={{ maxWidth: '900px', margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-        <h1 style={{ margin: 0 }}>Cześć, {user.email.split('@')[0]}! 👋</h1>
+        <h1 style={{ margin: 0 }}>Cześć, {displayName}! 👋</h1>
         <button 
             onClick={() => setShowWeekly(!showWeekly)}
             style={{ 
@@ -158,11 +159,14 @@ const DashboardPage = () => {
         ) : activePlan ? (
             <>
                 {/* Progress Bar Section */}
-                <div style={{ padding: '1.5rem', background: '#fff', borderRadius: '20px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', border: '1px solid #e2e8f0' }}>
+                <div style={{ padding: '1.5rem', background: '#fff', borderRadius: '20px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', border: '2px solid #f97316' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem', alignItems: 'flex-end' }}>
                         <div>
-                            <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#1e293b' }}>DZISIEJSZY TRENING</span>
-                            <div style={{ fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase' }}>{activePlan.title}</div>
+                            <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                <span style={{ width: '8px', height: '8px', background: '#f97316', borderRadius: '50%' }}></span>
+                                AKTYWNY PLAN
+                            </span>
+                            <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#1e293b', marginTop: '0.25rem' }}>{activePlan.title}</div>
                         </div>
                         <span style={{ fontSize: '1.5rem', fontWeight: '900', color: '#f97316' }}>{calculateTodayProgress()}%</span>
                     </div>
