@@ -40,13 +40,15 @@ WORKOUT_SERVICE_URL = os.getenv("WORKOUT_SERVICE_URL", "http://workout-service:8
 model = None
 using_vertex = False
 
-if GEMINI_API_KEY:
-    try:
-        genai.configure(api_key=GEMINI_API_KEY)
-        model = genai.GenerativeModel('gemini-2.5-flash')
-        logger.info("Initialized Google AI Studio (gemini-2.5-flash)")
-    except Exception as e:
-        logger.error(f"AI Studio initialization failed: {e}")
+if not GEMINI_API_KEY:
+    raise ValueError("GEMINI_API_KEY environment variable is not set!")
+
+try:
+    genai.configure(api_key=GEMINI_API_KEY)
+    model = genai.GenerativeModel('gemini-2.5-flash')
+    logger.info("Initialized Google AI Studio (gemini-2.5-flash)")
+except Exception as e:
+    logger.error(f"AI Studio initialization failed: {e}")
 
 if not model and GCP_PROJECT:
     try:
