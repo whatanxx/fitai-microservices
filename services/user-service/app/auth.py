@@ -10,7 +10,9 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import User
 
-JWT_SECRET = os.getenv("JWT_SECRET", "change_me_in_production")
+JWT_SECRET = os.getenv("JWT_SECRET")
+if not JWT_SECRET:
+    raise ValueError("JWT_SECRET environment variable is not set!")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 JWT_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES", "30"))
 

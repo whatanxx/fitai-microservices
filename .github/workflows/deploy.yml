@@ -1,0 +1,92 @@
+name: Build and Deploy to GCE VM
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    name: Build and Push Images
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+
+      - name: 'Configure Docker for Artifact Registry'
+        run: |
+          # Wyciągamy region z pełnej nazwy registry (np. us-central1-docker.pkg.dev -> us-central1)
+          REGION=$(echo "${{ secrets.GCP_REGISTRY }}" | cut -d'-' -f1)
+          gcloud auth configure-docker ${REGION}-docker.pkg.dev --quiet
+
+      - name: Build and Push Services
+        run: |
+          REGISTRY=${{ secrets.GCP_REGISTRY }}
+          
+          # User Service
+          docker build -t $REGISTRY/user-service:latest ./services/user-service
+          docker push $REGISTRY/user-service:latest
+          
+          # Workout Service
+          docker build -t $REGISTRY/workout-service:latest ./services/workout-service
+          docker push $REGISTRY/workout-service:latest
+          
+          # AI Coach Service
+          docker build -t $REGISTRY/ai-coach-service:latest ./services/ai-coach-service
+          docker push $REGISTRY/ai-coach-service:latest
+          
+          # Frontend (Production build)
+          docker build -t $REGISTRY/frontend:latest -f ./frontend/Dockerfile.prod ./frontend
+          docker push $REGISTRY/frontend:latest
+
+  deploy:
+    name: Deploy to VM via SSH
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Copy docker-compose and nginx config to VM
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.VM_IP }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "docker-compose.prod.yml,nginx/nginx.conf"
+          target: "~/fitai-app"
+
+      - name: Execute remote SSH commands
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VM_IP }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ~/fitai-app
+            
+            # Tworzenie pliku .env z sekretów GitHub
+            echo "GCP_REGISTRY=${{ secrets.GCP_REGISTRY }}" > .env
+            echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> .env
+            echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> .env
+            echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
+            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+            echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
+            
+            # Logowanie do Artifact Registry na maszynie (wymaga gcloud na VM)
+            REGION=$(echo "${{ secrets.GCP_REGISTRY }}" | cut -d'-' -f1)
+            # Zakładamy, że maszyna ma przypisane Service Account z uprawnieniami do Registry
+            gcloud auth configure-docker ${REGION}-docker.pkg.dev --quiet
+            
+            # Restart kontenerów
+            docker-compose -f docker-compose.prod.yml pull
+            docker-compose -f docker-compose.prod.yml up -d
