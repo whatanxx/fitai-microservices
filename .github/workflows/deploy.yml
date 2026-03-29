@@ -27,9 +27,9 @@ jobs:
 
       - name: 'Configure Docker for Artifact Registry'
         run: |
-          # Wyciągamy region z pełnej nazwy registry (np. us-central1-docker.pkg.dev -> us-central1)
-          REGION=$(echo "${{ secrets.GCP_REGISTRY }}" | cut -d'-' -f1)
-          gcloud auth configure-docker ${REGION}-docker.pkg.dev --quiet
+          # Wyciągamy host (np. us-central1-docker.pkg.dev) z pełnego adresu registry
+          REGISTRY_HOST=$(echo "${{ secrets.GCP_REGISTRY }}" | cut -d'/' -f1)
+          gcloud auth configure-docker "$REGISTRY_HOST" --quiet
 
       - name: Build and Push Services
         run: |
@@ -86,9 +86,8 @@ jobs:
             echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
             
             # Logowanie do Artifact Registry na maszynie (wymaga gcloud na VM)
-            REGION=$(echo "${{ secrets.GCP_REGISTRY }}" | cut -d'-' -f1)
-            # Zakładamy, że maszyna ma przypisane Service Account z uprawnieniami do Registry
-            gcloud auth configure-docker ${REGION}-docker.pkg.dev --quiet
+            REGISTRY_HOST=$(echo "${{ secrets.GCP_REGISTRY }}" | cut -d'/' -f1)
+            gcloud auth configure-docker "$REGISTRY_HOST" --quiet
             
             # Restart kontenerów
             docker-compose -f docker-compose.prod.yml pull
