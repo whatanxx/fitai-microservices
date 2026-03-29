@@ -19,6 +19,7 @@ const Navbar = () => {
           <li><Link to="/">Dashboard</Link></li>
           <li><Link to="/ai-coach">AI-Coach</Link></li>
           <li><Link to="/history">Moje Plany</Link></li>
+          <li><Link to="/social">Wall</Link></li>
         </ul>
         
         <ul className="nav-links nav-right">
@@ -26,7 +27,7 @@ const Navbar = () => {
             <>
               <li className="user-info">
                 <Link to="/profile" style={{ color: '#f97316', textDecoration: 'none' }}>
-                  Profil ({user.weight}kg)
+                  Profil ({user.profile?.nickname || user.profile?.first_name || user.email.split('@')[0]})
                 </Link>
               </li>
               <li><button type="button" className="logout-btn" onClick={handleLogout}>Wyloguj</button></li>

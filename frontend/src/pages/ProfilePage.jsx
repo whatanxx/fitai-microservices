@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 import { 
   LineChart, 
   Line, 
@@ -12,14 +13,22 @@ import {
 
 const ProfilePage = () => {
   const { user, updateProfile } = useAuth();
+  const { addNotification } = useNotification();
   const [isEditing, setIsEditing] = useState(false);
+  const [firstName, setFirstName] = useState('');
+  const [nickname, setNickname] = useState('');
   const [weight, setWeight] = useState(0);
   const [height, setHeight] = useState(0);
+  const [age, setAge] = useState(0);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (user?.profile) {
+      setFirstName(user.profile.first_name || '');
+      setNickname(user.profile.nickname || '');
       setWeight(user.profile.current_weight_kg || 0);
       setHeight(user.profile.height_cm || 0);
+      setAge(user.profile.age || 25);
     }
   }, [user]);
 
@@ -47,11 +56,40 @@ const ProfilePage = () => {
 
   const handleSave = async (e) => {
     e.preventDefault();
+    setError('');
+
+    if (!firstName.trim()) {
+        setError('Imię jest wymagane.');
+        return;
+    }
+    if (Number(height) < 120) {
+        setError('Wzrost musi wynosić co najmniej 120 cm.');
+        return;
+    }
+    if (Number(weight) <= 30) {
+        setError('Waga musi być większa niż 30 kg.');
+        return;
+    }
+    if (Number(age) < 0 || Number(age) > 120) {
+        setError('Wiek musi być między 0 a 120 lat.');
+        return;
+    }
+
     const success = await updateProfile({ 
+      first_name: firstName,
+      nickname: nickname || null,
       current_weight_kg: Number(weight), 
-      height_cm: Number(height) 
+      height_cm: Number(height),
+      age: Number(age)
     });
-    if (success) setIsEditing(false);
+    
+    if (success) {
+        setIsEditing(false);
+        addNotification('Profil został zaktualizowany!', 'success');
+    } else {
+        setError('Wystąpił błąd podczas zapisywania profilu.');
+        addNotification('Błąd zapisu profilu.', 'error');
+    }
   };
 
   // Przygotowanie danych do wykresu (sortowanie po dacie)
@@ -139,7 +177,18 @@ const ProfilePage = () => {
         </div>
       ) : (
         <form onSubmit={handleSave}>
+          {error && <div style={{ color: '#ef4444', marginBottom: '1rem', textAlign: 'center', fontWeight: 'bold' }}>{error}</div>}
           <div style={{ textAlign: 'left', width: '100%' }}>
+            <label>Wiek</label>
+            <input 
+              type="number" 
+              value={age} 
+              onChange={(e) => setAge(e.target.value)} 
+              placeholder="np. 25"
+              required
+            />
+          </div>
+          <div style={{ textAlign: 'left', width: '100%', marginTop: '1.5rem' }}>
             <label>Waga (kg)</label>
             <input 
               type="number" 

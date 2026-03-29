@@ -39,6 +39,8 @@ class UserOut(BaseModel):
 # ── Profile schemas ───────────────────────────────────────────────────────────
 
 class UserProfileBase(BaseModel):
+    first_name: Optional[str] = None
+    nickname: Optional[str] = None
     age: Optional[int] = None
     gender: Optional[str] = None
     height_cm: Optional[int] = None
@@ -50,6 +52,27 @@ class UserProfileBase(BaseModel):
     experience_level: Optional[str] = None
     available_equipment: Optional[List[str]] = None
     weight_history: Optional[List[dict]] = None
+
+    @field_validator("age")
+    @classmethod
+    def validate_age(cls, v: Optional[int]) -> Optional[int]:
+        if v is not None and (v < 0 or v > 120):
+            raise ValueError("Age must be between 0 and 120")
+        return v
+
+    @field_validator("height_cm")
+    @classmethod
+    def validate_height(cls, v: Optional[int]) -> Optional[int]:
+        if v is not None and v < 120:
+            raise ValueError("Height must be at least 120 cm")
+        return v
+
+    @field_validator("current_weight_kg")
+    @classmethod
+    def validate_weight(cls, v: Optional[float]) -> Optional[float]:
+        if v is not None and v <= 30:
+            raise ValueError("Weight must be greater than 30 kg")
+        return v
 
 
 class UserProfileCreate(UserProfileBase):
