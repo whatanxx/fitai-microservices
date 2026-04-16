@@ -181,6 +181,40 @@ const ProfilePage = () => {
       ) : (
         <form onSubmit={handleSave}>
           {error && <div style={{ color: '#ef4444', marginBottom: '1rem', textAlign: 'center', fontWeight: 'bold' }}>{error}</div>}
+          
+          <h3 style={{ marginBottom: '1rem', color: '#1e293b', fontSize: '1rem' }}>👤 Profil użytkownika</h3>
+          <div style={{ textAlign: 'left', width: '100%' }}>
+            <label>Imię</label>
+            <input 
+              type="text" 
+              value={firstName} 
+              onChange={(e) => setFirstName(e.target.value)} 
+              placeholder="Twoje imię"
+              required
+            />
+          </div>
+          <div style={{ textAlign: 'left', width: '100%', marginTop: '1rem' }}>
+            <label>Nickname</label>
+            <input 
+              type="text" 
+              value={nickname} 
+              onChange={(e) => setNickname(e.target.value)} 
+              placeholder="Twój pseudonim"
+            />
+          </div>
+          <div style={{ textAlign: 'left', width: '100%', marginTop: '1rem' }}>
+            <label>Preferowany model AI (Trener)</label>
+            <select 
+              value={preferredAiProvider} 
+              onChange={(e) => setPreferredAiProvider(e.target.value)}
+              style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc' }}
+            >
+              <option value="google">Google Gemini 2.5 Flash (Zalecany)</option>
+              <option value="openai">OpenAI GPT-4o-mini</option>
+            </select>
+          </div>
+
+          <h3 style={{ marginBottom: '1rem', marginTop: '2rem', color: '#1e293b', fontSize: '1rem' }}>⚖️ Dane biometryczne</h3>
           <div style={{ textAlign: 'left', width: '100%' }}>
             <label>Wiek</label>
             <input 
@@ -191,7 +225,7 @@ const ProfilePage = () => {
               required
             />
           </div>
-          <div style={{ textAlign: 'left', width: '100%', marginTop: '1.5rem' }}>
+          <div style={{ textAlign: 'left', width: '100%', marginTop: '1rem' }}>
             <label>Waga (kg)</label>
             <input 
               type="number" 
@@ -201,7 +235,7 @@ const ProfilePage = () => {
               required
             />
           </div>
-          <div style={{ textAlign: 'left', width: '100%', marginTop: '1.5rem' }}>
+          <div style={{ textAlign: 'left', width: '100%', marginTop: '1rem' }}>
             <label>Wzrost (cm)</label>
             <input 
               type="number" 
@@ -211,17 +245,7 @@ const ProfilePage = () => {
               required
             />
           </div>
-          <div style={{ textAlign: 'left', width: '100%', marginTop: '1.5rem' }}>
-            <label>Preferowany dostawca AI</label>
-            <select 
-              value={preferredAiProvider} 
-              onChange={(e) => setPreferredAiProvider(e.target.value)}
-              style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc' }}
-            >
-              <option value="google">Google Gemini 2.5 Flash</option>
-              <option value="openai">OpenAI GPT-4o-mini</option>
-            </select>
-          </div>
+          
           <div style={{ display: 'flex', gap: '1rem', marginTop: '2.5rem' }}>
             <button type="button" onClick={() => setIsEditing(false)} className="btn-secondary" style={{ flex: 1 }}>
               Anuluj
