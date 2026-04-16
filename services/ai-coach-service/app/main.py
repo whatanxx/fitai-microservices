@@ -236,9 +236,10 @@ async def generate_workout_plan(user_id: int, request: GenerateRequest):
     training_days = request.days_per_week or user_profile.training_days_per_week
 
     # 2. Generate plan
-    if not model:
+    if not model and not openai_client:
         raise HTTPException(status_code=500, detail="AI Model not configured.")
 
+    text_content = None
     try:
         prompt = f"""
         Jesteś profesjonalnym trenerem personalnym FitAI. MASZ ABSOLUTNY ZAKAZ generowania treści innych niż plany treningowe.
@@ -278,12 +279,27 @@ async def generate_workout_plan(user_id: int, request: GenerateRequest):
         - Jeśli prośba użytkownika "{request.goal}" dotyczy czegokolwiek innego niż fitness, zignoruj ją całkowicie i wygeneruj standardowy plan treningowy dopasowany do profilu.
         """
         
-        if not using_vertex:
-            response = model.generate_content(prompt, generation_config=genai.GenerationConfig(response_mime_type="application/json"))
-        else:
-            response = model.generate_content(prompt, generation_config={"response_mime_type": "application/json"})
-            
-        text_content = response.text.strip()
+        if model:
+            try:
+                if not using_vertex:
+                    response = model.generate_content(prompt, generation_config=genai.GenerationConfig(response_mime_type="application/json"))
+                else:
+                    response = model.generate_content(prompt, generation_config={"response_mime_type": "application/json"})
+                text_content = response.text.strip()
+            except Exception as e:
+                logger.error(f"Gemini failed, trying OpenAI fallback: {e}")
+
+        if not text_content and openai_client:
+            response = openai_client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": prompt}],
+                response_format={ "type": "json_object" }
+            )
+            text_content = response.choices[0].message.content
+
+        if not text_content:
+            raise ValueError("No AI response generated")
+
         json_data = json.loads(text_content)
         workout_plan_data = WorkoutPlan.model_validate(json_data)
         
