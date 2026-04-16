@@ -35,33 +35,32 @@ jobs:
       # 1. User Service
       - name: Build and Deploy User Service
         run: |
-          gcloud builds submit --tag ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/user-service:latest ./services/user-service
+          gcloud builds submit --project=${{ env.PROJECT_ID }} --tag ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/user-service:latest --timeout=15m ./services/user-service
           gcloud run deploy user-service --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/user-service:latest \
-            --region ${{ env.REGION }} --add-cloudsql-instances ${{ env.PROJECT_ID }}:${{ env.REGION }}:fitai-instance \
+            --project=${{ env.PROJECT_ID }} --region ${{ env.REGION }} --add-cloudsql-instances ${{ env.PROJECT_ID }}:${{ env.REGION }}:fitai-instance \
             --set-env-vars "DATABASE_URL=postgresql+psycopg2://postgres:${{ secrets.DB_PASSWORD }}@/fitai_db?host=/cloudsql/${{ env.PROJECT_ID }}:${{ env.REGION }}:fitai-instance,JWT_SECRET=${{ secrets.JWT_SECRET }}" \
             --port 8001 --allow-unauthenticated --quiet
 
       # 2. Workout Service
       - name: Build and Deploy Workout Service
         run: |
-          gcloud builds submit --tag ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/workout-service:latest ./services/workout-service
+          gcloud builds submit --project=${{ env.PROJECT_ID }} --tag ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/workout-service:latest --timeout=15m ./services/workout-service
           gcloud run deploy workout-service --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/workout-service:latest \
-            --region ${{ env.REGION }} --add-cloudsql-instances ${{ env.PROJECT_ID }}:${{ env.REGION }}:fitai-instance \
+            --project=${{ env.PROJECT_ID }} --region ${{ env.REGION }} --add-cloudsql-instances ${{ env.PROJECT_ID }}:${{ env.REGION }}:fitai-instance \
             --set-env-vars "DATABASE_URL=postgresql+asyncpg://postgres:${{ secrets.DB_PASSWORD }}@/fitai_db?host=/cloudsql/${{ env.PROJECT_ID }}:${{ env.REGION }}:fitai-instance" \
             --port 8002 --allow-unauthenticated --quiet
 
       # 3. AI Coach Service
       - name: Build and Deploy AI Coach Service
         run: |
-          gcloud builds submit --tag ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/ai-coach-service:latest ./services/ai-coach-service
+          gcloud builds submit --project=${{ env.PROJECT_ID }} --tag ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/ai-coach-service:latest --timeout=15m ./services/ai-coach-service
           gcloud run deploy ai-coach-service --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/ai-coach-service:latest \
-            --region ${{ env.REGION }} --set-env-vars "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }},OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }},USER_SERVICE_URL=https://user-service-911534372370.us-central1.run.app,WORKOUT_SERVICE_URL=https://workout-service-911534372370.us-central1.run.app,GCP_PROJECT=${{ env.PROJECT_ID }},GCP_LOCATION=${{ env.REGION }}" \
+            --project=${{ env.PROJECT_ID }} --region ${{ env.REGION }} --set-env-vars "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }},OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }},USER_SERVICE_URL=https://user-service-911534372370.us-central1.run.app,WORKOUT_SERVICE_URL=https://workout-service-911534372370.us-central1.run.app,GCP_PROJECT=${{ env.PROJECT_ID }},GCP_LOCATION=${{ env.REGION }}" \
             --port 8003 --allow-unauthenticated --quiet
 
-      # 4. Frontend (Cloud Build manually to use Dockerfile.prod)
+      # 4. Frontend
       - name: Build and Deploy Frontend
         run: |
-          # Tworzymy tymczasowy cloudbuild.yaml dla frontendu
           cat <<EOF > ./frontend/cloudbuild_ci.yaml
           steps:
           - name: 'gcr.io/cloud-builders/docker'
@@ -69,6 +68,6 @@ jobs:
           images:
           - '${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/frontend:latest'
           EOF
-          gcloud builds submit --config ./frontend/cloudbuild_ci.yaml ./frontend
+          gcloud builds submit --project=${{ env.PROJECT_ID }} --config ./frontend/cloudbuild_ci.yaml --timeout=20m ./frontend
           gcloud run deploy frontend --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/frontend:latest \
-            --region ${{ env.REGION }} --port 8080 --allow-unauthenticated --quiet
+            --project=${{ env.PROJECT_ID }} --region ${{ env.REGION }} --port 8080 --allow-unauthenticated --quiet
