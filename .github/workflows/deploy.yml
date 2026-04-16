@@ -35,7 +35,7 @@ jobs:
       # 1. User Service
       - name: Build and Deploy User Service
         run: |
-          gcloud builds submit --project=${{ env.PROJECT_ID }} --tag ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/user-service:latest --timeout=15m ./services/user-service --suppress-logs
+          gcloud builds submit --project=${{ env.PROJECT_ID }} --tag ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/user-service:latest --timeout=15m ./services/user-service --logging=cloud_logging
           gcloud run deploy user-service --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/user-service:latest \
             --project=${{ env.PROJECT_ID }} --region ${{ env.REGION }} --add-cloudsql-instances ${{ env.PROJECT_ID }}:${{ env.REGION }}:fitai-instance \
             --set-env-vars "DATABASE_URL=postgresql+psycopg2://postgres:${{ secrets.DB_PASSWORD }}@/fitai_db?host=/cloudsql/${{ env.PROJECT_ID }}:${{ env.REGION }}:fitai-instance,JWT_SECRET=${{ secrets.JWT_SECRET }}" \
@@ -44,7 +44,7 @@ jobs:
       # 2. Workout Service
       - name: Build and Deploy Workout Service
         run: |
-          gcloud builds submit --project=${{ env.PROJECT_ID }} --tag ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/workout-service:latest --timeout=15m ./services/workout-service --suppress-logs
+          gcloud builds submit --project=${{ env.PROJECT_ID }} --tag ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/workout-service:latest --timeout=15m ./services/workout-service --logging=cloud_logging
           gcloud run deploy workout-service --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/workout-service:latest \
             --project=${{ env.PROJECT_ID }} --region ${{ env.REGION }} --add-cloudsql-instances ${{ env.PROJECT_ID }}:${{ env.REGION }}:fitai-instance \
             --set-env-vars "DATABASE_URL=postgresql+asyncpg://postgres:${{ secrets.DB_PASSWORD }}@/fitai_db?host=/cloudsql/${{ env.PROJECT_ID }}:${{ env.REGION }}:fitai-instance" \
@@ -53,7 +53,7 @@ jobs:
       # 3. AI Coach Service
       - name: Build and Deploy AI Coach Service
         run: |
-          gcloud builds submit --project=${{ env.PROJECT_ID }} --tag ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/ai-coach-service:latest --timeout=15m ./services/ai-coach-service --suppress-logs
+          gcloud builds submit --project=${{ env.PROJECT_ID }} --tag ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/ai-coach-service:latest --timeout=15m ./services/ai-coach-service --logging=cloud_logging
           gcloud run deploy ai-coach-service --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/ai-coach-service:latest \
             --project=${{ env.PROJECT_ID }} --region ${{ env.REGION }} --set-env-vars "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }},OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }},USER_SERVICE_URL=https://user-service-911534372370.us-central1.run.app,WORKOUT_SERVICE_URL=https://workout-service-911534372370.us-central1.run.app,GCP_PROJECT=${{ env.PROJECT_ID }},GCP_LOCATION=${{ env.REGION }}" \
             --port 8003 --quiet
@@ -68,6 +68,6 @@ jobs:
           images:
           - '${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/frontend:latest'
           EOF
-          gcloud builds submit --project=${{ env.PROJECT_ID }} --config ./frontend/cloudbuild_ci.yaml --timeout=20m ./frontend --suppress-logs
+          gcloud builds submit --project=${{ env.PROJECT_ID }} --config ./frontend/cloudbuild_ci.yaml --timeout=20m ./frontend --logging=cloud_logging
           gcloud run deploy frontend --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/frontend:latest \
             --project=${{ env.PROJECT_ID }} --region ${{ env.REGION }} --port 8080 --quiet
