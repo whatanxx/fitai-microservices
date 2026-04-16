@@ -6,9 +6,10 @@ on:
       - main
 
 env:
-  PROJECT_ID: gen-lang-client-0145356180 # Twój ID projektu
+  PROJECT_ID: gen-lang-client-0145356180
   REGION: us-central1
   REPO_NAME: fitai-repo
+  REGISTRY: us-central1-docker.pkg.dev/gen-lang-client-0145356180/fitai-repo
 
 permissions:
   contents: read
@@ -32,42 +33,44 @@ jobs:
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v3'
 
-      # 1. User Service
-      - name: Build and Deploy User Service
+      - name: 'Configure Docker'
         run: |
-          gcloud builds submit --project=${{ env.PROJECT_ID }} --tag ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/user-service:latest --timeout=15m ./services/user-service --logging=cloud_logging
-          gcloud run deploy user-service --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/user-service:latest \
+          gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
+
+      # 1. User Service
+      - name: User Service (Build, Push, Deploy)
+        run: |
+          docker build -t ${{ env.REGISTRY }}/user-service:latest ./services/user-service
+          docker push ${{ env.REGISTRY }}/user-service:latest
+          gcloud run deploy user-service --image ${{ env.REGISTRY }}/user-service:latest \
             --project=${{ env.PROJECT_ID }} --region ${{ env.REGION }} --add-cloudsql-instances ${{ env.PROJECT_ID }}:${{ env.REGION }}:fitai-instance \
             --set-env-vars "DATABASE_URL=postgresql+psycopg2://postgres:${{ secrets.DB_PASSWORD }}@/fitai_db?host=/cloudsql/${{ env.PROJECT_ID }}:${{ env.REGION }}:fitai-instance,JWT_SECRET=${{ secrets.JWT_SECRET }}" \
             --port 8001 --quiet
 
       # 2. Workout Service
-      - name: Build and Deploy Workout Service
+      - name: Workout Service (Build, Push, Deploy)
         run: |
-          gcloud builds submit --project=${{ env.PROJECT_ID }} --tag ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/workout-service:latest --timeout=15m ./services/workout-service --logging=cloud_logging
-          gcloud run deploy workout-service --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/workout-service:latest \
+          docker build -t ${{ env.REGISTRY }}/workout-service:latest ./services/workout-service
+          docker push ${{ env.REGISTRY }}/workout-service:latest
+          gcloud run deploy workout-service --image ${{ env.REGISTRY }}/workout-service:latest \
             --project=${{ env.PROJECT_ID }} --region ${{ env.REGION }} --add-cloudsql-instances ${{ env.PROJECT_ID }}:${{ env.REGION }}:fitai-instance \
             --set-env-vars "DATABASE_URL=postgresql+asyncpg://postgres:${{ secrets.DB_PASSWORD }}@/fitai_db?host=/cloudsql/${{ env.PROJECT_ID }}:${{ env.REGION }}:fitai-instance" \
             --port 8002 --quiet
 
       # 3. AI Coach Service
-      - name: Build and Deploy AI Coach Service
+      - name: AI Coach Service (Build, Push, Deploy)
         run: |
-          gcloud builds submit --project=${{ env.PROJECT_ID }} --tag ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/ai-coach-service:latest --timeout=15m ./services/ai-coach-service --logging=cloud_logging
-          gcloud run deploy ai-coach-service --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/ai-coach-service:latest \
-            --project=${{ env.PROJECT_ID }} --region ${{ env.REGION }} --set-env-vars "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }},OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }},USER_SERVICE_URL=https://user-service-911534372370.us-central1.run.app,WORKOUT_SERVICE_URL=https://workout-service-911534372370.us-central1.run.app,GCP_PROJECT=${{ env.PROJECT_ID }},GCP_LOCATION=${{ env.REGION }}" \
+          docker build -t ${{ env.REGISTRY }}/ai-coach-service:latest ./services/ai-coach-service
+          docker push ${{ env.REGISTRY }}/ai-coach-service:latest
+          gcloud run deploy ai-coach-service --image ${{ env.REGISTRY }}/ai-coach-service:latest \
+            --project=${{ env.PROJECT_ID }} --region ${{ env.REGION }} \
+            --set-env-vars "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }},OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }},USER_SERVICE_URL=https://user-service-911534372370.us-central1.run.app,WORKOUT_SERVICE_URL=https://workout-service-911534372370.us-central1.run.app,GCP_PROJECT=${{ env.PROJECT_ID }},GCP_LOCATION=${{ env.REGION }}" \
             --port 8003 --quiet
 
       # 4. Frontend
-      - name: Build and Deploy Frontend
+      - name: Frontend (Build, Push, Deploy)
         run: |
-          cat <<EOF > ./frontend/cloudbuild_ci.yaml
-          steps:
-          - name: 'gcr.io/cloud-builders/docker'
-            args: ['build', '-t', '${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/frontend:latest', '-f', 'Dockerfile.prod', '.']
-          images:
-          - '${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/frontend:latest'
-          EOF
-          gcloud builds submit --project=${{ env.PROJECT_ID }} --config ./frontend/cloudbuild_ci.yaml --timeout=20m ./frontend --logging=cloud_logging
-          gcloud run deploy frontend --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/frontend:latest \
+          docker build -t ${{ env.REGISTRY }}/frontend:latest -f ./frontend/Dockerfile.prod ./frontend
+          docker push ${{ env.REGISTRY }}/frontend:latest
+          gcloud run deploy frontend --image ${{ env.REGISTRY }}/frontend:latest \
             --project=${{ env.PROJECT_ID }} --region ${{ env.REGION }} --port 8080 --quiet
