@@ -20,6 +20,7 @@ const ProfilePage = () => {
   const [weight, setWeight] = useState(0);
   const [height, setHeight] = useState(0);
   const [age, setAge] = useState(0);
+  const [preferredAiProvider, setPreferredAiProvider] = useState('google');
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -29,6 +30,7 @@ const ProfilePage = () => {
       setWeight(user.profile.current_weight_kg || 0);
       setHeight(user.profile.height_cm || 0);
       setAge(user.profile.age || 25);
+      setPreferredAiProvider(user.profile.preferred_ai_provider || 'google');
     }
   }, [user]);
 
@@ -80,7 +82,8 @@ const ProfilePage = () => {
       nickname: nickname || null,
       current_weight_kg: Number(weight), 
       height_cm: Number(height),
-      age: Number(age)
+      age: Number(age),
+      preferred_ai_provider: preferredAiProvider
     });
     
     if (success) {
@@ -207,6 +210,17 @@ const ProfilePage = () => {
               placeholder="np. 180"
               required
             />
+          </div>
+          <div style={{ textAlign: 'left', width: '100%', marginTop: '1.5rem' }}>
+            <label>Preferowany dostawca AI</label>
+            <select 
+              value={preferredAiProvider} 
+              onChange={(e) => setPreferredAiProvider(e.target.value)}
+              style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc' }}
+            >
+              <option value="google">Google Gemini 2.5 Flash</option>
+              <option value="openai">OpenAI GPT-4o-mini</option>
+            </select>
           </div>
           <div style={{ display: 'flex', gap: '1rem', marginTop: '2.5rem' }}>
             <button type="button" onClick={() => setIsEditing(false)} className="btn-secondary" style={{ flex: 1 }}>

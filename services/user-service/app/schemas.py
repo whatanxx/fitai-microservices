@@ -51,6 +51,7 @@ class UserProfileBase(BaseModel):
     training_days_per_week: Optional[int] = None
     experience_level: Optional[str] = None
     available_equipment: Optional[List[str]] = None
+    preferred_ai_provider: Optional[str] = "google"
     weight_history: Optional[List[dict]] = None
 
     @field_validator("age")
