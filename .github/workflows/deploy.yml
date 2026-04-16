@@ -10,6 +10,10 @@ env:
   REGION: us-central1
   REPO_NAME: fitai-repo
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   deploy:
     name: Deploy Services
