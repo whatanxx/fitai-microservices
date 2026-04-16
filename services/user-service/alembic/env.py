@@ -13,6 +13,14 @@ config = context.config
 
 # Override sqlalchemy.url from DATABASE_URL env var if available
 database_url = os.getenv("DATABASE_URL")
+if not database_url:
+    db_user = os.getenv("DB_USER", "postgres")
+    db_pass = os.getenv("DB_PASSWORD")
+    db_name = os.getenv("DB_NAME", "fitai_db")
+    db_host = os.getenv("DB_HOST", "/cloudsql/gen-lang-client-0145356180:us-central1:fitai-instance")
+    if db_pass:
+        database_url = f"postgresql+psycopg2://{db_user}:{db_pass}@/{db_name}?host={db_host}"
+
 if database_url:
     config.set_main_option("sqlalchemy.url", database_url)
 
