@@ -35,4 +35,8 @@ async def get_db():
 
 async def init_db():
     async with engine.begin() as conn:
+        # Create tables if they don't exist
         await conn.run_sync(Base.metadata.create_all)
+        # Explicitly update the 'reps' column length for existing databases
+        from sqlalchemy import text
+        await conn.execute(text("ALTER TABLE exercises ALTER COLUMN reps TYPE VARCHAR(100)"))
