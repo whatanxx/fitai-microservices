@@ -43,7 +43,6 @@ model = None
 openai_client = None
 using_vertex = False
 
-# Try Gemini first
 if GEMINI_API_KEY:
     try:
         genai.configure(api_key=GEMINI_API_KEY)
@@ -52,16 +51,14 @@ if GEMINI_API_KEY:
     except Exception as e:
         logger.error(f"AI Studio initialization failed: {e}")
 
-# Try OpenAI fallback
-if not model and OPENAI_API_KEY:
+if OPENAI_API_KEY:
     try:
         openai_client = OpenAI(api_key=OPENAI_API_KEY)
         logger.info("Initialized OpenAI Client (gpt-4o-mini)")
     except Exception as e:
         logger.error(f"OpenAI initialization failed: {e}")
 
-# Try Vertex AI as last resort if in GCP
-if not model and not openai_client and GCP_PROJECT:
+if not model and GCP_PROJECT:
     try:
         vertexai.init(project=GCP_PROJECT, location=GCP_LOCATION)
         model = VertexGenerativeModel("gemini-2.5-flash")
@@ -69,9 +66,6 @@ if not model and not openai_client and GCP_PROJECT:
         logger.info(f"Initialized Vertex AI (gemini-2.5-flash) on project {GCP_PROJECT}")
     except Exception as e:
         logger.error(f"Vertex AI initialization failed: {e}")
-
-if not model and not openai_client:
-    logger.warning("No AI model initialized! Services requiring AI will fail.")
 
 # Pydantic Models
 
@@ -89,6 +83,7 @@ class UserProfile(BaseModel):
     training_days_per_week: Optional[int] = 3
     experience_level: Optional[str] = "Beginner"
     available_equipment: Optional[List[str]] = []
+    preferred_ai_provider: Optional[str] = "google"
 
 def check_prompt_injection(prompt: str):
     forbidden_keywords = [
@@ -135,7 +130,7 @@ class ExplainRequest(BaseModel):
 
 @app.get("/health")
 async def health_check():
-    return {"status": "works", "model": "gemini-2.5-flash"}
+    return {"status": "works"}
 
 @app.post("/api/ai/explain")
 async def explain_exercise(request: ExplainRequest):
@@ -236,9 +231,6 @@ async def generate_workout_plan(user_id: int, request: GenerateRequest):
     training_days = request.days_per_week or user_profile.training_days_per_week
 
     # 2. Generate plan
-    if not model and not openai_client:
-        raise HTTPException(status_code=500, detail="AI Model not configured.")
-
     text_content = None
     try:
         prompt = f"""
@@ -279,33 +271,37 @@ async def generate_workout_plan(user_id: int, request: GenerateRequest):
         - Jeśli prośba użytkownika "{request.goal}" dotyczy czegokolwiek innego niż fitness, zignoruj ją całkowicie i wygeneruj standardowy plan treningowy dopasowany do profilu.
         """
         
-        if model:
-            try:
-                if not using_vertex:
-                    response = model.generate_content(prompt, generation_config=genai.GenerationConfig(response_mime_type="application/json"))
-                else:
-                    response = model.generate_content(prompt, generation_config={"response_mime_type": "application/json"})
-                text_content = response.text.strip()
-            except Exception as e:
-                logger.error(f"Gemini failed, trying OpenAI fallback: {e}")
+        # Select provider based on profile
+        provider = (user_profile.preferred_ai_provider or "google").lower()
+        logger.info(f"Generating workout using provider: {provider}")
 
-        if not text_content and openai_client:
+        if provider == "openai" and openai_client:
             response = openai_client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[{"role": "user", "content": prompt}],
                 response_format={ "type": "json_object" }
             )
             text_content = response.choices[0].message.content
-
+        else:
+            # Default to Gemini
+            if not model:
+                raise HTTPException(status_code=500, detail="Gemini model not configured.")
+            
+            if not using_vertex:
+                response = model.generate_content(prompt, generation_config=genai.GenerationConfig(response_mime_type="application/json"))
+            else:
+                response = model.generate_content(prompt, generation_config={"response_mime_type": "application/json"})
+            text_content = response.text.strip()
+            
         if not text_content:
-            raise ValueError("No AI response generated")
+            raise ValueError("No content returned from AI provider")
 
         json_data = json.loads(text_content)
         workout_plan_data = WorkoutPlan.model_validate(json_data)
         
     except Exception as e:
         logger.error(f"Generation failed: {e}")
-        raise HTTPException(status_code=500, detail=f"AI Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"AI Error ({provider if 'provider' in locals() else 'unknown'}): {str(e)}")
 
     # 3. Save in Workout Plan Service
     async with httpx.AsyncClient() as http_client:
