@@ -44,7 +44,7 @@ jobs:
           docker push ${{ env.REGISTRY }}/user-service:latest
           gcloud run deploy user-service --image ${{ env.REGISTRY }}/user-service:latest \
             --project=${{ env.PROJECT_ID }} --region ${{ env.REGION }} --add-cloudsql-instances ${{ env.PROJECT_ID }}:${{ env.REGION }}:fitai-instance \
-            --set-env-vars "DATABASE_URL=postgresql+psycopg2://postgres:${{ secrets.DB_PASSWORD }}@/fitai_db?host=/cloudsql/${{ env.PROJECT_ID }}:${{ env.REGION }}:fitai-instance,JWT_SECRET=${{ secrets.JWT_SECRET }}" \
+            --set-env-vars "DB_PASSWORD=${{ secrets.DB_PASSWORD }},JWT_SECRET=${{ secrets.JWT_SECRET }}" \
             --port 8001 --quiet
 
       # 2. Workout Service
@@ -54,7 +54,7 @@ jobs:
           docker push ${{ env.REGISTRY }}/workout-service:latest
           gcloud run deploy workout-service --image ${{ env.REGISTRY }}/workout-service:latest \
             --project=${{ env.PROJECT_ID }} --region ${{ env.REGION }} --add-cloudsql-instances ${{ env.PROJECT_ID }}:${{ env.REGION }}:fitai-instance \
-            --set-env-vars "DATABASE_URL=postgresql+asyncpg://postgres:${{ secrets.DB_PASSWORD }}@/fitai_db?host=/cloudsql/${{ env.PROJECT_ID }}:${{ env.REGION }}:fitai-instance" \
+            --set-env-vars "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" \
             --port 8002 --quiet
 
       # 3. AI Coach Service
