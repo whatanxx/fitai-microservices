@@ -10,6 +10,7 @@ import google.generativeai as genai
 from vertexai.generative_models import GenerativeModel as VertexGenerativeModel
 import vertexai
 from dotenv import load_dotenv
+from openai import OpenAI
 
 # Load environment variables
 load_dotenv()
@@ -31,6 +32,7 @@ app.add_middleware(
 
 # Configuration
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 GCP_PROJECT = os.getenv("GCP_PROJECT")
 GCP_LOCATION = os.getenv("GCP_LOCATION", "us-central1")
 USER_SERVICE_URL = os.getenv("USER_SERVICE_URL", "http://user-service:8001")
@@ -38,19 +40,28 @@ WORKOUT_SERVICE_URL = os.getenv("WORKOUT_SERVICE_URL", "http://workout-service:8
 
 # Model initialization logic
 model = None
+openai_client = None
 using_vertex = False
 
-if not GEMINI_API_KEY:
-    raise ValueError("GEMINI_API_KEY environment variable is not set!")
+# Try Gemini first
+if GEMINI_API_KEY:
+    try:
+        genai.configure(api_key=GEMINI_API_KEY)
+        model = genai.GenerativeModel('gemini-2.5-flash')
+        logger.info("Initialized Google AI Studio (gemini-2.5-flash)")
+    except Exception as e:
+        logger.error(f"AI Studio initialization failed: {e}")
 
-try:
-    genai.configure(api_key=GEMINI_API_KEY)
-    model = genai.GenerativeModel('gemini-2.5-flash')
-    logger.info("Initialized Google AI Studio (gemini-2.5-flash)")
-except Exception as e:
-    logger.error(f"AI Studio initialization failed: {e}")
+# Try OpenAI fallback
+if not model and OPENAI_API_KEY:
+    try:
+        openai_client = OpenAI(api_key=OPENAI_API_KEY)
+        logger.info("Initialized OpenAI Client (gpt-4o-mini)")
+    except Exception as e:
+        logger.error(f"OpenAI initialization failed: {e}")
 
-if not model and GCP_PROJECT:
+# Try Vertex AI as last resort if in GCP
+if not model and not openai_client and GCP_PROJECT:
     try:
         vertexai.init(project=GCP_PROJECT, location=GCP_LOCATION)
         model = VertexGenerativeModel("gemini-2.5-flash")
@@ -58,6 +69,9 @@ if not model and GCP_PROJECT:
         logger.info(f"Initialized Vertex AI (gemini-2.5-flash) on project {GCP_PROJECT}")
     except Exception as e:
         logger.error(f"Vertex AI initialization failed: {e}")
+
+if not model and not openai_client:
+    logger.warning("No AI model initialized! Services requiring AI will fail.")
 
 # Pydantic Models
 

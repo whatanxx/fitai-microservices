@@ -55,7 +55,7 @@ jobs:
         run: |
           gcloud builds submit --tag ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/ai-coach-service:latest ./services/ai-coach-service
           gcloud run deploy ai-coach-service --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/ai-coach-service:latest \
-            --region ${{ env.REGION }} --set-env-vars "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }},USER_SERVICE_URL=https://user-service-911534372370.us-central1.run.app,WORKOUT_SERVICE_URL=https://workout-service-911534372370.us-central1.run.app,GCP_PROJECT=${{ env.PROJECT_ID }},GCP_LOCATION=${{ env.REGION }}" \
+            --region ${{ env.REGION }} --set-env-vars "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }},OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }},USER_SERVICE_URL=https://user-service-911534372370.us-central1.run.app,WORKOUT_SERVICE_URL=https://workout-service-911534372370.us-central1.run.app,GCP_PROJECT=${{ env.PROJECT_ID }},GCP_LOCATION=${{ env.REGION }}" \
             --port 8003 --allow-unauthenticated --quiet
 
       # 4. Frontend (Cloud Build manually to use Dockerfile.prod)
