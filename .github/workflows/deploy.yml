@@ -1,4 +1,4 @@
-name: Build and Deploy to GCE VM
+name: Build and Deploy to Cloud Run
 
 on:
   push:
@@ -6,11 +6,13 @@ on:
       - main
 
 env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  PROJECT_ID: gen-lang-client-0145356180 # Twój ID projektu
+  REGION: us-central1
+  REPO_NAME: fitai-repo
 
 jobs:
-  build-and-push:
-    name: Build and Push Images
+  deploy:
+    name: Deploy Services
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -25,70 +27,43 @@ jobs:
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v3'
 
-      - name: 'Configure Docker for Artifact Registry'
+      # 1. User Service
+      - name: Build and Deploy User Service
         run: |
-          # Wyciągamy host (np. us-central1-docker.pkg.dev) z pełnego adresu registry
-          REGISTRY_HOST=$(echo "${{ secrets.GCP_REGISTRY }}" | cut -d'/' -f1)
-          gcloud auth configure-docker "$REGISTRY_HOST" --quiet
+          gcloud builds submit --tag ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/user-service:latest ./services/user-service
+          gcloud run deploy user-service --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/user-service:latest \
+            --region ${{ env.REGION }} --add-cloudsql-instances ${{ env.PROJECT_ID }}:${{ env.REGION }}:fitai-instance \
+            --set-env-vars "DATABASE_URL=postgresql+psycopg2://postgres:${{ secrets.DB_PASSWORD }}@/fitai_db?host=/cloudsql/${{ env.PROJECT_ID }}:${{ env.REGION }}:fitai-instance,JWT_SECRET=${{ secrets.JWT_SECRET }}" \
+            --port 8001 --allow-unauthenticated --quiet
 
-      - name: Build and Push Services
+      # 2. Workout Service
+      - name: Build and Deploy Workout Service
         run: |
-          REGISTRY=${{ secrets.GCP_REGISTRY }}
-          
-          # User Service
-          docker build -t $REGISTRY/user-service:latest ./services/user-service
-          docker push $REGISTRY/user-service:latest
-          
-          # Workout Service
-          docker build -t $REGISTRY/workout-service:latest ./services/workout-service
-          docker push $REGISTRY/workout-service:latest
-          
-          # AI Coach Service
-          docker build -t $REGISTRY/ai-coach-service:latest ./services/ai-coach-service
-          docker push $REGISTRY/ai-coach-service:latest
-          
-          # Frontend (Production build)
-          docker build -t $REGISTRY/frontend:latest -f ./frontend/Dockerfile.prod ./frontend
-          docker push $REGISTRY/frontend:latest
+          gcloud builds submit --tag ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/workout-service:latest ./services/workout-service
+          gcloud run deploy workout-service --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/workout-service:latest \
+            --region ${{ env.REGION }} --add-cloudsql-instances ${{ env.PROJECT_ID }}:${{ env.REGION }}:fitai-instance \
+            --set-env-vars "DATABASE_URL=postgresql+asyncpg://postgres:${{ secrets.DB_PASSWORD }}@/fitai_db?host=/cloudsql/${{ env.PROJECT_ID }}:${{ env.REGION }}:fitai-instance" \
+            --port 8002 --allow-unauthenticated --quiet
 
-  deploy:
-    name: Deploy to VM via SSH
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
+      # 3. AI Coach Service
+      - name: Build and Deploy AI Coach Service
+        run: |
+          gcloud builds submit --tag ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/ai-coach-service:latest ./services/ai-coach-service
+          gcloud run deploy ai-coach-service --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/ai-coach-service:latest \
+            --region ${{ env.REGION }} --set-env-vars "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }},USER_SERVICE_URL=https://user-service-911534372370.us-central1.run.app,WORKOUT_SERVICE_URL=https://workout-service-911534372370.us-central1.run.app,GCP_PROJECT=${{ env.PROJECT_ID }},GCP_LOCATION=${{ env.REGION }}" \
+            --port 8003 --allow-unauthenticated --quiet
 
-      - name: Copy docker-compose and nginx config to VM
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.VM_IP }}
-          username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "docker-compose.prod.yml,nginx/nginx.conf"
-          target: "~/fitai-app"
-
-      - name: Execute remote SSH commands
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.VM_IP }}
-          username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd ~/fitai-app
-            
-            # Tworzenie pliku .env z sekretów GitHub
-            echo "GCP_REGISTRY=${{ secrets.GCP_REGISTRY }}" > .env
-            echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> .env
-            echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> .env
-            echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
-            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
-            echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
-            
-            # Logowanie do Artifact Registry na maszynie (wymaga gcloud na VM)
-            REGISTRY_HOST=$(echo "${{ secrets.GCP_REGISTRY }}" | cut -d'/' -f1)
-            gcloud auth configure-docker "$REGISTRY_HOST" --quiet
-            
-            # Restart kontenerów
-            docker-compose -f docker-compose.prod.yml pull
-            docker-compose -f docker-compose.prod.yml up -d
+      # 4. Frontend (Cloud Build manually to use Dockerfile.prod)
+      - name: Build and Deploy Frontend
+        run: |
+          # Tworzymy tymczasowy cloudbuild.yaml dla frontendu
+          cat <<EOF > ./frontend/cloudbuild_ci.yaml
+          steps:
+          - name: 'gcr.io/cloud-builders/docker'
+            args: ['build', '-t', '${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/frontend:latest', '-f', 'Dockerfile.prod', '.']
+          images:
+          - '${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/frontend:latest'
+          EOF
+          gcloud builds submit --config ./frontend/cloudbuild_ci.yaml ./frontend
+          gcloud run deploy frontend --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/frontend:latest \
+            --region ${{ env.REGION }} --port 8080 --allow-unauthenticated --quiet
