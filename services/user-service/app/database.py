@@ -12,7 +12,7 @@ if not DATABASE_URL:
     db_host = os.getenv("DB_HOST", "/cloudsql/gen-lang-client-0145356180:us-central1:fitai-instance")
     
     if db_pass:
-        DATABASE_URL = f"postgresql+psycopg2://{db_user}:{db_pass}@/ {db_name}?host={db_host}"
+        DATABASE_URL = f"postgresql+psycopg2://{db_user}:{db_pass}@/{db_name}?host={db_host}"
     else:
         raise ValueError("Neither DATABASE_URL nor DB_PASSWORD environment variable is set!")
 
