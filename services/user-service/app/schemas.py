@@ -1,7 +1,6 @@
 from datetime import datetime
-from typing import List, Optional
-from pydantic import BaseModel, EmailStr, field_validator
 
+from pydantic import BaseModel, EmailStr, field_validator
 
 # ── Auth schemas ─────────────────────────────────────────────────────────────
 
@@ -39,38 +38,38 @@ class UserOut(BaseModel):
 # ── Profile schemas ───────────────────────────────────────────────────────────
 
 class UserProfileBase(BaseModel):
-    first_name: Optional[str] = None
-    nickname: Optional[str] = None
-    age: Optional[int] = None
-    gender: Optional[str] = None
-    height_cm: Optional[int] = None
-    current_weight_kg: Optional[float] = None
-    medical_conditions: Optional[str] = None
-    fitness_goal: Optional[str] = None
-    training_time_minutes: Optional[int] = None
-    training_days_per_week: Optional[int] = None
-    experience_level: Optional[str] = None
-    available_equipment: Optional[List[str]] = None
-    preferred_ai_provider: Optional[str] = "google"
-    weight_history: Optional[List[dict]] = None
+    first_name: str | None = None
+    nickname: str | None = None
+    age: int | None = None
+    gender: str | None = None
+    height_cm: int | None = None
+    current_weight_kg: float | None = None
+    medical_conditions: str | None = None
+    fitness_goal: str | None = None
+    training_time_minutes: int | None = None
+    training_days_per_week: int | None = None
+    experience_level: str | None = None
+    available_equipment: list[str] | None = None
+    preferred_ai_provider: str | None = "google"
+    weight_history: list[dict] | None = None
 
     @field_validator("age")
     @classmethod
-    def validate_age(cls, v: Optional[int]) -> Optional[int]:
+    def validate_age(cls, v: int | None) -> int | None:
         if v is not None and (v < 0 or v > 120):
             raise ValueError("Age must be between 0 and 120")
         return v
 
     @field_validator("height_cm")
     @classmethod
-    def validate_height(cls, v: Optional[int]) -> Optional[int]:
+    def validate_height(cls, v: int | None) -> int | None:
         if v is not None and v < 120:
             raise ValueError("Height must be at least 120 cm")
         return v
 
     @field_validator("current_weight_kg")
     @classmethod
-    def validate_weight(cls, v: Optional[float]) -> Optional[float]:
+    def validate_weight(cls, v: float | None) -> float | None:
         if v is not None and v <= 30:
             raise ValueError("Weight must be greater than 30 kg")
         return v
@@ -87,12 +86,12 @@ class UserProfileUpdate(UserProfileBase):
 class UserProfileOut(UserProfileBase):
     id: int
     user_id: int
-    updated_at: Optional[datetime] = None
+    updated_at: datetime | None = None
 
     model_config = {"from_attributes": True}
 
 
 class UserWithProfileOut(UserOut):
-    profile: Optional[UserProfileOut] = None
+    profile: UserProfileOut | None = None
 
     model_config = {"from_attributes": True}

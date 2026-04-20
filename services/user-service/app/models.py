@@ -1,14 +1,15 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+
 from sqlalchemy import (
+    JSON,
     Boolean,
     Column,
     DateTime,
     Float,
+    ForeignKey,
     Integer,
-    JSON,
     String,
     Text,
-    ForeignKey,
 )
 from sqlalchemy.orm import relationship
 
@@ -22,7 +23,7 @@ class User(Base):
     email = Column(String(255), unique=True, index=True, nullable=False)
     hashed_password = Column(String(255), nullable=False)
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
 
     profile = relationship("UserProfile", back_populates="user", uselist=False, cascade="all, delete-orphan")
 
@@ -47,6 +48,6 @@ class UserProfile(Base):
     available_equipment = Column(JSON, nullable=True)
     preferred_ai_provider = Column(String(20), nullable=False, default="google")
     weight_history = Column(JSON, nullable=True, default=list)
-    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC))
 
     user = relationship("User", back_populates="profile")

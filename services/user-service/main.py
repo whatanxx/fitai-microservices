@@ -1,7 +1,7 @@
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Optional
 
 app = FastAPI(title="User Profile Service", version="0.1.0")
 
@@ -21,12 +21,12 @@ class UserProfile(BaseModel):
     gender: str
     height_cm: int
     current_weight_kg: float
-    medical_conditions: Optional[str] = None
+    medical_conditions: str | None = None
     fitness_goal: str
     training_time_minutes: int
     training_days_per_week: int
     experience_level: str
-    available_equipment: List[str]
+    available_equipment: list[str]
 
 # Dummy database for testing AI Coach flow
 DUMMY_PROFILES = {

@@ -1,0 +1,27 @@
+# Konfiguracja Ruff dla FitAI Microservices
+line-length = 120
+target-version = "py311"
+
+[lint]
+# Wybrane zestawy reguł
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort (sortowanie importów)
+    "B",   # flake8-bugbear (częste błędy)
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade (nowoczesna składnia)
+    "ASYNC", # flake8-async (poprawność kodu asynchronicznego)
+]
+
+ignore = [
+    "E501", # Ignoruj błędy zbyt długich linii
+    "B008", # Ignoruj Depends() w argumentach (wzorzec FastAPI)
+    "E712", # Ignoruj błędy porównania do True/False (częste w SQLAlchemy)
+]
+
+[lint.isort]
+combine-as-imports = true
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+known-first-party = ["app"]

@@ -1,4 +1,5 @@
 import os
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
@@ -10,7 +11,7 @@ if not DATABASE_URL:
     db_pass = os.getenv("DB_PASSWORD")
     db_name = os.getenv("DB_NAME", "fitai_db")
     db_host = os.getenv("DB_HOST", "/cloudsql/gen-lang-client-0145356180:us-central1:fitai-instance")
-    
+
     if db_pass:
         DATABASE_URL = f"postgresql+psycopg2://{db_user}:{db_pass}@/{db_name}?host={db_host}"
     else:
