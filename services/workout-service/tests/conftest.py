@@ -1,19 +1,41 @@
 import os
 from collections.abc import AsyncGenerator
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-# Mock DB for health check if needed, though health_check usually doesn't need it
-os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///./test.db"
+os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///./test_workout.db"
 
-from app.main import app
+from app.database import Base, engine  # noqa: E402
+from app.main import app  # noqa: E402
+
+
+async def _create_tables() -> None:
+    """Tworzy tabele w testowej bazie SQLite (bez ALTER TABLE specyficznego dla Postgres)."""
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+
+async def _drop_tables() -> None:
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+
+
+@pytest.fixture(scope="session", autouse=True)
+async def setup_database() -> AsyncGenerator[None, None]:
+    """Tworzy tabele raz przed wszystkimi testami i usuwa je po zakończeniu sesji."""
+    await _create_tables()
+    yield
+    await _drop_tables()
 
 
 @pytest.fixture
 async def async_client() -> AsyncGenerator[AsyncClient, None]:
-    async with AsyncClient(
-        transport=ASGITransport(app=app), # type: ignore
-        base_url="http://test"
-    ) as client:
-        yield client
+    """Klient HTTP do testowania endpointów; pomija init_db (ALTER TABLE Postgres)."""
+    with patch("app.main.init_db", new=AsyncMock()):
+        async with AsyncClient(
+            transport=ASGITransport(app=app),  # type: ignore
+            base_url="http://test",
+        ) as client:
+            yield client
