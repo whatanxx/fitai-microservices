@@ -40,8 +40,8 @@
 - Komunikacja: REST API do Profile Service, Workout Plan Service i AI Coach Service.
 
 ### Profile Service (port 8001)
-- Odpowiedzialnosc: przechowywanie i aktualizacja profilu uzytkownika. Obsluguje takze rejestracje i logowanie (generuje tokeny JWT).
-- Udostepnia dane potrzebne AI do wygenerowania planu przez wewnetrzny endpoint `/profiles/{user_id}`.
+- Odpowiedzialność: przechowywanie i aktualizacja profilu użytkownika. Obsługuje także rejestrację i logowanie (generuje tokeny JWT).
+- Udostępnia dane potrzebne AI do wygenerowania planu przez wewnętrzny endpoint `/profiles/{user_id}`.
 
 ### Workout Plan Service (port 8002)
 - Odpowiedzialnosc: zapis i odczyt planow treningowych, dni i cwiczen.
@@ -58,8 +58,8 @@
 - Narzedzie do zarzadzania baza danych PostgreSQL w srodowisku deweloperskim.
 
 ### Zewnetrzny dostawca LLM
-- Domyslny dostawca: **Google Gemini** (AI Studio przez `GEMINI_API_KEY` lub Vertex AI przez `GCP_PROJECT`).
-- Opcjonalny dostawca: **OpenAI** (`gpt-4o-mini`) aktywowany przez `OPENAI_API_KEY` i ustawienie `preferred_ai_provider=openai` w profilu uzytkownika.
+- Domyślny dostawca: **Google Gemini** (AI Studio przez `GEMINI_API_KEY` lub Vertex AI przez `GCP_PROJECT`).
+- Opcjonalny dostawca: **OpenAI** (`gpt-4o-mini`) aktywowany przez `OPENAI_API_KEY` i ustawienie `preferred_ai_provider=openai` w profilu użytkownika.
 
 ---
 
@@ -78,13 +78,13 @@
 | Metoda | Endpoint | Opis |
 |---|---|---|
 | GET | `/health` | Status serwisu (`{"status": "works"}`). |
-| POST | `/api/users/register` | Rejestracja nowego uzytkownika. Zwraca dane uzytkownika (201). |
+| POST | `/api/users/register` | Rejestracja nowego użytkownika. Zwraca dane użytkownika (201). |
 | POST | `/api/users/login` | Logowanie – zwraca token JWT (`access_token`). |
-| GET | `/api/users/me` | Dane zalogowanego uzytkownika (wymaga tokenu Bearer). |
-| POST | `/api/users/{user_id}/profile` | Tworzy profil uzytkownika (201). |
-| GET | `/api/users/{user_id}/profile` | Pobiera profil uzytkownika. |
-| PUT | `/api/users/{user_id}/profile` | Aktualizuje profil uzytkownika. |
-| GET | `/profiles/{user_id}` | Wewnetrzny endpoint dla serwisow (service-to-service). |
+| GET | `/api/users/me` | Dane zalogowanego użytkownika (wymaga tokenu Bearer). |
+| POST | `/api/users/{user_id}/profile` | Tworzy profil użytkownika (201). |
+| GET | `/api/users/{user_id}/profile` | Pobiera profil użytkownika. |
+| PUT | `/api/users/{user_id}/profile` | Aktualizuje profil użytkownika. |
+| GET | `/profiles/{user_id}` | Wewnętrzny endpoint dla serwisów (service-to-service). |
 
 ### Workout Plan Service
 
@@ -92,17 +92,17 @@
 |---|---|---|
 | GET | `/health` | Status serwisu (`{"status": "works"}`). |
 | POST | `/api/workouts/plans` | Tworzy nowy plan treningowy (201). |
-| GET | `/api/workouts/plans/user/{user_id}` | Zwraca liste planow uzytkownika. |
-| GET | `/api/workouts/plans/public` | Zwraca liste opublikowanych planow. |
-| GET | `/api/workouts/plans/{plan_id}` | Zwraca pelny plan z dniami i cwiczeniami. |
-| PUT | `/api/workouts/plans/{plan_id}` | Zamienia cala zawartosc planu. |
-| PATCH | `/api/workouts/plans/{plan_id}?title=` | Aktualizuje tytul planu. |
-| PATCH | `/api/workouts/plans/{plan_id}/activate` | Aktywuje plan (dezaktywuje pozostale). |
+| GET | `/api/workouts/plans/user/{user_id}` | Zwraca listę planów użytkownika. |
+| GET | `/api/workouts/plans/public` | Zwraca listę opublikowanych planów. |
+| GET | `/api/workouts/plans/{plan_id}` | Zwraca pełny plan z dniami i ćwiczeniami. |
+| PUT | `/api/workouts/plans/{plan_id}` | Zamienia całą zawartość planu. |
+| PATCH | `/api/workouts/plans/{plan_id}?title=` | Aktualizuje tytuł planu. |
+| PATCH | `/api/workouts/plans/{plan_id}/activate` | Aktywuje plan (dezaktywuje pozostałe). |
 | PATCH | `/api/workouts/plans/{plan_id}/publish` | Publikuje plan (`is_published=true`). |
 | DELETE | `/api/workouts/plans/{plan_id}` | Usuwa plan (204). |
-| POST | `/api/workouts/plans/{plan_id}/clone/{user_id}` | Klonuje plan dla innego uzytkownika. |
+| POST | `/api/workouts/plans/{plan_id}/clone/{user_id}` | Klonuje plan dla innego użytkownika. |
 | PATCH | `/api/workouts/days/{day_id}/complete` | Ustawia `is_completed=true` dla dnia. |
-| PATCH | `/api/workouts/exercises/{exercise_id}/complete-set` | Zwiekasza `completed_sets` o 1. |
+| PATCH | `/api/workouts/exercises/{exercise_id}/complete-set` | Zwiększa `completed_sets` o 1. |
 
 ### AI Coach Service
 
@@ -110,8 +110,8 @@
 |---|---|---|
 | GET | `/health` | Status serwisu (`{"status": "works"}`). |
 | POST | `/api/ai/generate/{user_id}` | Pobiera profil, generuje plan przez LLM i zapisuje go w Workout Service. |
-| POST | `/api/ai/refine/{plan_id}` | Modyfikuje istniejacy plan na podstawie opisu uzytkownika. |
-| POST | `/api/ai/explain` | Zwraca krotkie wyjasnienie jak wykonac dane cwiczenie. |
+| POST | `/api/ai/refine/{plan_id}` | Modyfikuje istniejący plan na podstawie opisu użytkownika. |
+| POST | `/api/ai/explain` | Zwraca krótkie wyjaśnienie jak wykonać dane ćwiczenie. |
 
 ---
 
@@ -175,9 +175,9 @@
 
 ## Strategia auth (JWT)
 
-Autentykacja jest w pelni zaimplementowana w **User Service**.
+Autentykacja jest w pełni zaimplementowana w **User Service**.
 
-- **User Service**: Odpowiada za rejestracje (`POST /api/users/register`), logowanie (`POST /api/users/login`) i walidacje tokenu (`GET /api/users/me`).
-- **Haszowanie**: Hasla sa przechowywane w postaci zhaszowanej przy uzyciu biblioteki `bcrypt`.
-- **Token JWT**: Podpisywany `JWT_SECRET`, domyslny czas waznosci 30 minut (konfigurowalny przez `JWT_EXPIRE_MINUTES`).
-- **Serwisy domenowe** (`workout-plan`, `ai-coach`): Nie waliduja JWT samodzielnie. W docelowej architekturze weryfikacja odbywa sie na brzegu systemu (API Gateway/Nginx), a do serwisow trafia juz zweryfikowany `user_id`.
+- **User Service**: Odpowiada za rejestrację (`POST /api/users/register`), logowanie (`POST /api/users/login`) i walidację tokenu (`GET /api/users/me`).
+- **Haszowanie**: Hasła są przechowywane w postaci zhaszowanej przy użyciu biblioteki `bcrypt`.
+- **Token JWT**: Podpisywany `JWT_SECRET`, domyślny czas ważności 30 minut (konfigurowalny przez `JWT_EXPIRE_MINUTES`).
+- **Serwisy domenowe** (`workout-plan`, `ai-coach`): Nie walidują JWT samodzielnie. W docelowej architekturze weryfikacja odbywa się na brzegu systemu (API Gateway/Nginx), a do serwisów trafia już zweryfikowany `user_id`.

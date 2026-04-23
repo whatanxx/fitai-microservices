@@ -12,7 +12,7 @@ from app.main import app  # noqa: E402
 
 
 async def _create_tables() -> None:
-    """Tworzy tabele w testowej bazie SQLite (bez ALTER TABLE specyficznego dla Postgres)."""
+    """Tworzy tabele w testowej bazie SQLite (bez ALTER TABLE specyficznej dla Postgres)."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 

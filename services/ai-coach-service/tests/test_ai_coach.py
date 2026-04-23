@@ -52,7 +52,7 @@ _SAVED_PLAN = {
 
 
 def _make_mock_http_response(status_code: int = 200, json_data: object = None) -> MagicMock:
-    """Tworzy atrpę odpowiedzi httpx."""
+    """Tworzy atrapę odpowiedzi httpx."""
     mock_resp = MagicMock()
     mock_resp.status_code = status_code
     mock_resp.json.return_value = json_data or {}
