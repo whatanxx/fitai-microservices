@@ -1,7 +1,8 @@
 import os
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
-from sqlalchemy.orm import DeclarativeBase
+
 from dotenv import load_dotenv
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy.orm import DeclarativeBase
 
 load_dotenv()
 
@@ -13,7 +14,7 @@ if not DATABASE_URL:
     db_pass = os.getenv("DB_PASSWORD")
     db_name = os.getenv("DB_NAME", "fitai_db")
     db_host = os.getenv("DB_HOST", "/cloudsql/gen-lang-client-0145356180:us-central1:fitai-instance")
-    
+
     if db_pass:
         DATABASE_URL = f"postgresql+asyncpg://{db_user}:{db_pass}@/{db_name}?host={db_host}"
     else:

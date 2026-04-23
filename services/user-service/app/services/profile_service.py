@@ -1,7 +1,9 @@
-from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
+from sqlalchemy.orm import Session
+
 from app.models import User, UserProfile
 from app.schemas import UserProfileCreate, UserProfileUpdate
+
 
 class ProfileService:
     @staticmethod
@@ -23,7 +25,7 @@ class ProfileService:
         data = payload.model_dump(exclude_unset=True)
         if "current_weight_kg" in data:
             data["weight_history"] = [{"weight": data["current_weight_kg"], "date": datetime.now().isoformat()}]
-        
+
         profile = UserProfile(user_id=user.id, **data)
         db.add(profile)
         db.commit()
@@ -47,7 +49,7 @@ class ProfileService:
         from datetime import datetime
         user = ProfileService.get_user_or_404(user_id, db)
         data = payload.model_dump(exclude_unset=True)
-        
+
         if not user.profile:
             # Auto-create profile on first PUT
             if "current_weight_kg" in data:
@@ -60,17 +62,17 @@ class ProfileService:
             if "current_weight_kg" in data and data["current_weight_kg"] != profile.current_weight_kg:
                 new_history_entry = {"weight": data["current_weight_kg"], "date": datetime.now().isoformat()}
                 if profile.weight_history is None:
-                    profile.weight_history = [new_history_entry]
+                    profile.weight_history = [new_history_entry]  # type: ignore
                 else:
                     # SQLAlchemy doesn't track changes in JSON lists unless we replace the whole list
                     # or use flag_modified
-                    temp_history = list(profile.weight_history)
+                    temp_history = list(profile.weight_history)  # type: ignore
                     temp_history.append(new_history_entry)
-                    profile.weight_history = temp_history
+                    profile.weight_history = temp_history  # type: ignore
 
             for field, value in data.items():
                 setattr(profile, field, value)
-        
+
         db.commit()
         db.refresh(profile)
         return profile
