@@ -1,7 +1,7 @@
 # 💪 FitAI – Planer treningowy z AI-coachem
 
 ![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.110-009688?logo=fastapi)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.111-009688?logo=fastapi)
 ![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?logo=postgresql)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)
@@ -23,7 +23,7 @@ FitAI to aplikacja mikroserwisowa umożliwiająca personalizowane planowanie tre
 
 ## 🏗️ Architektura
 
-Projekt oparty jest na architekturze mikroserwisowej z czterema głównymi komponentami:
+Projekt oparty jest na architekturze mikroserwisowej z pięcioma głównymi komponentami:
 
 | Serwis | Port | Opis |
 |---|---|---|
@@ -46,9 +46,9 @@ Szczegółowy diagram i opis architektury: [`docs/ARCHITEKTURA.md`](docs/ARCHITE
 | PostgreSQL 15 | Baza danych |
 | Docker + Docker Compose | Konteneryzacja i lokalne środowisko |
 | GitHub Actions | CI/CD |
-| LLM API (aktualnie OpenAI w diagramie) | Generowanie planów treningowych |
+| LLM API (Gemini jako domyślny, OpenAI jako opcjonalny) | Generowanie planów treningowych |
 | SQLAlchemy + Alembic | ORM i migracje bazy danych |
-| AWS / GCP | Deploy produkcyjny |
+| GCP (Google Cloud Run) | Deploy produkcyjny |
 
 ---
 
@@ -85,7 +85,7 @@ cd fitai-microservices
 
 # 2. Skopiuj plik konfiguracyjny i uzupełnij klucz API LLM
 cp .env.example .env
-# Edytuj .env i wpisz odpowiedni klucz (np. OPENAI_API_KEY)
+# Edytuj .env i wpisz odpowiedni klucz (GEMINI_API_KEY lub OPENAI_API_KEY)
 
 # 3. Uruchom wszystkie serwisy
 docker-compose up --build
@@ -101,13 +101,12 @@ docker-compose up --build
 
 ## 🔐 Strategia autoryzacji (JWT)
 
-JWT nie zostało porzucone - zostało wyjęte z odpowiedzialności serwisów domenowych.
+Autentykacja jest zaimplementowana w **User Service** (`/api/users/register`, `/api/users/login`, `/api/users/me`).
 
-- serwisy domenowe (`profile`, `workout-plan`, `ai-coach`) skupiają się na logice biznesowej,
-- weryfikacja JWT powinna odbywać się na brzegu systemu (API Gateway) lub w dedykowanym Auth Service,
-- do serwisów backendowych przekazywany jest już zweryfikowany kontekst użytkownika (`user_id`, claims).
-
-Takie podejście upraszcza mikroserwisy i ogranicza duplikację logiki bezpieczeństwa.
+- **Rejestracja i logowanie** – User Service generuje tokeny JWT podpisane kluczem `JWT_SECRET`.
+- **Haszowanie haseł** – bcrypt.
+- **Weryfikacja tożsamości** – endpoint `/api/users/me` wymaga ważnego tokenu Bearer.
+- **Serwisy domenowe** (`workout-plan`, `ai-coach`) nie walidują JWT samodzielnie – w docelowej architekturze weryfikacja odbywa się na brzegu systemu (API Gateway / Auth middleware), a do serwisów trafia już zweryfikowany `user_id`.
 
 ---
 
@@ -117,9 +116,32 @@ W projekcie aktywnie korzystamy z narzędzi AI:
 
 - **GitHub Copilot** – wygenerowanie README, utworzenie struktury projektu
 - **Gemini CLI/Antigravity** – generowanie szkieletów serwisów i komponentów
-- **LLM API (np. OpenAI)** – rdzeń funkcjonalności AI Coach Service (generowanie planów)
-- **Gemini Web** - wykorzystywanie w przeglądarce do burzy mozgów, generowania instrukcji deploymentu (łatwiej udostępnić)
+- **LLM API (Gemini jako domyślny, OpenAI jako opcjonalny)** – rdzeń funkcjonalności AI Coach Service (generowanie planów)
+- **Gemini Web** – wykorzystywanie w przeglądarce do burzy mózgów, generowania instrukcji deploymentu (łatwiej udostępnić)
+
 Szczegółowe zasady pracy z AI: [`docs/AI_TOOLS.md`](docs/AI_TOOLS.md)
+
+---
+
+## 🧪 Testy
+
+Każdy serwis backendowy posiada własny zestaw testów w folderze `tests/`. Testy uruchamia się z poziomu folderu serwisu:
+
+```bash
+# Uruchomienie testów
+pytest
+
+# Testy z raportem pokrycia
+pytest --cov=app tests/
+```
+
+| Serwis | Folder testów | Pliki testów |
+|---|---|---|
+| **User Service** | `services/user-service/tests/` | `test_health.py`, `test_auth.py`, `test_profiles.py` |
+| **Workout Service** | `services/workout-service/tests/` | `test_health.py`, `test_plans.py` |
+| **AI Coach Service** | `services/ai-coach-service/tests/` | `test_health.py`, `test_ai_coach.py` |
+
+Szczegółowa strategia testowania: [`docs/TESTOWANIE.md`](docs/TESTOWANIE.md)
 
 ---
 

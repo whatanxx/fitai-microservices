@@ -13,16 +13,16 @@
         REST API                                     REST API
             |                                            |
 +-----------v-----------+                    +-----------v-----------+
-|    Profile Service    |                    |   AI Coach Service    |
+|    User Service       |                    |   AI Coach Service    |
 |       (port 8001)     |                    |      (port 8003)      |
 +-----------+-----------+                    +-----------+-----------+
             |                                            |
-            | REST API                                   | request/response
+            | REST API (internal)                        | request/response
             |                                            |
 +-----------v-----------+                    +-----------v-----------+
-| Workout Plan Service  |                    |      OpenAI API       |
-|      (port 8002)      |                    +-----------------------+
-+-----------+-----------+
+| Workout Plan Service  |                    | LLM Provider          |
+|      (port 8002)      |                    | (Gemini / OpenAI)     |
++-----------+-----------+                    +-----------------------+
             |
             | read/write
             |
@@ -40,8 +40,8 @@
 - Komunikacja: REST API do Profile Service, Workout Plan Service i AI Coach Service.
 
 ### Profile Service (port 8001)
-- Odpowiedzialnosc: przechowywanie i aktualizacja profilu uzytkownika.
-- Udostepnia dane potrzebne AI do wygenerowania planu.
+- Odpowiedzialnosc: przechowywanie i aktualizacja profilu uzytkownika. Obsluguje takze rejestracje i logowanie (generuje tokeny JWT).
+- Udostepnia dane potrzebne AI do wygenerowania planu przez wewnetrzny endpoint `/profiles/{user_id}`.
 
 ### Workout Plan Service (port 8002)
 - Odpowiedzialnosc: zapis i odczyt planow treningowych, dni i cwiczen.
@@ -58,7 +58,8 @@
 - Narzedzie do zarzadzania baza danych PostgreSQL w srodowisku deweloperskim.
 
 ### Zewnetrzny dostawca LLM
-- Aktualny diagram zaklada integracje z OpenAI API.
+- Domyslny dostawca: **Google Gemini** (AI Studio przez `GEMINI_API_KEY` lub Vertex AI przez `GCP_PROJECT`).
+- Opcjonalny dostawca: **OpenAI** (`gpt-4o-mini`) aktywowany przez `OPENAI_API_KEY` i ustawienie `preferred_ai_provider=openai` w profilu uzytkownika.
 
 ---
 
@@ -72,38 +73,62 @@
 
 ## Kontrakty API
 
-### Profile Service
+### User Service (Profile Service)
 
 | Metoda | Endpoint | Opis |
 |---|---|---|
 | GET | `/health` | Status serwisu (`{"status": "works"}`). |
-| POST | `/profiles` | Tworzy nowy profil uzytkownika. |
-| GET | `/profiles/{user_id}` | Pobiera profil konkretnego uzytkownika. |
-| PUT | `/profiles/{user_id}` | Aktualizuje profil uzytkownika. |
+| POST | `/api/users/register` | Rejestracja nowego uzytkownika. Zwraca dane uzytkownika (201). |
+| POST | `/api/users/login` | Logowanie – zwraca token JWT (`access_token`). |
+| GET | `/api/users/me` | Dane zalogowanego uzytkownika (wymaga tokenu Bearer). |
+| POST | `/api/users/{user_id}/profile` | Tworzy profil uzytkownika (201). |
+| GET | `/api/users/{user_id}/profile` | Pobiera profil uzytkownika. |
+| PUT | `/api/users/{user_id}/profile` | Aktualizuje profil uzytkownika. |
+| GET | `/profiles/{user_id}` | Wewnetrzny endpoint dla serwisow (service-to-service). |
 
 ### Workout Plan Service
 
 | Metoda | Endpoint | Opis |
 |---|---|---|
 | GET | `/health` | Status serwisu (`{"status": "works"}`). |
-| POST | `/plans` | Tworzy nowy plan (po wygenerowaniu przez AI). |
-| GET | `/plans/user/{user_id}` | Zwraca liste planow uzytkownika (widok listy). |
-| GET | `/plans/{plan_id}` | Zwraca pelny plan z tygodniami, dniami i cwiczeniami. |
-| PATCH | `/days/{day_id}/complete` | Ustawia `is_completed = true` dla dnia treningowego. |
+| POST | `/api/workouts/plans` | Tworzy nowy plan treningowy (201). |
+| GET | `/api/workouts/plans/user/{user_id}` | Zwraca liste planow uzytkownika. |
+| GET | `/api/workouts/plans/public` | Zwraca liste opublikowanych planow. |
+| GET | `/api/workouts/plans/{plan_id}` | Zwraca pelny plan z dniami i cwiczeniami. |
+| PUT | `/api/workouts/plans/{plan_id}` | Zamienia cala zawartosc planu. |
+| PATCH | `/api/workouts/plans/{plan_id}?title=` | Aktualizuje tytul planu. |
+| PATCH | `/api/workouts/plans/{plan_id}/activate` | Aktywuje plan (dezaktywuje pozostale). |
+| PATCH | `/api/workouts/plans/{plan_id}/publish` | Publikuje plan (`is_published=true`). |
+| DELETE | `/api/workouts/plans/{plan_id}` | Usuwa plan (204). |
+| POST | `/api/workouts/plans/{plan_id}/clone/{user_id}` | Klonuje plan dla innego uzytkownika. |
+| PATCH | `/api/workouts/days/{day_id}/complete` | Ustawia `is_completed=true` dla dnia. |
+| PATCH | `/api/workouts/exercises/{exercise_id}/complete-set` | Zwiekasza `completed_sets` o 1. |
 
 ### AI Coach Service
 
 | Metoda | Endpoint | Opis |
 |---|---|---|
 | GET | `/health` | Status serwisu (`{"status": "works"}`). |
-| POST | `/generate/{user_id}` | Glowne wywolanie procesu: profil -> LLM -> zapis planu. |
+| POST | `/api/ai/generate/{user_id}` | Pobiera profil, generuje plan przez LLM i zapisuje go w Workout Service. |
+| POST | `/api/ai/refine/{plan_id}` | Modyfikuje istniejacy plan na podstawie opisu uzytkownika. |
+| POST | `/api/ai/explain` | Zwraca krotkie wyjasnienie jak wykonac dane cwiczenie. |
 
 ---
 
 ## Model danych
 
-### Tabela `UserProfiles`
+### Tabela `users`
 - `id` INT PK
+- `email` VARCHAR(255) UNIQUE
+- `hashed_password` VARCHAR(255)
+- `is_active` BOOLEAN
+- `created_at` TIMESTAMP
+
+### Tabela `user_profiles`
+- `id` INT PK
+- `user_id` INT FK -> users.id (CASCADE DELETE)
+- `first_name` VARCHAR(100)
+- `nickname` VARCHAR(100)
 - `age` INT
 - `gender` VARCHAR(10)
 - `height_cm` INT
@@ -114,37 +139,45 @@
 - `training_days_per_week` INT
 - `experience_level` VARCHAR(20)
 - `available_equipment` JSON
+- `preferred_ai_provider` VARCHAR(20) DEFAULT 'google'
+- `weight_history` JSON
+- `updated_at` TIMESTAMP
 
-### Tabela `WorkoutPlans`
+### Tabela `workout_plans`
 - `id` INT PK
-- `user_id` INT FK -> UserProfiles.id
+- `user_id` INT (cross-service reference, brak FK)
 - `title` VARCHAR(100)
 - `duration_weeks` INT
+- `is_active` BOOLEAN
+- `is_published` BOOLEAN
 - `created_at` TIMESTAMP
+- `updated_at` TIMESTAMP
 
-### Tabela `WorkoutDays`
+### Tabela `workout_days`
 - `id` INT PK
-- `plan_id` INT FK -> WorkoutPlans.id
+- `plan_id` INT FK -> workout_plans.id
 - `week_number` INT
 - `day_number` INT
 - `is_rest_day` BOOLEAN
-- `target_muscle_group` VARCHAR(50)
+- `target_muscle_group` VARCHAR(100)
 - `is_completed` BOOLEAN
 
-### Tabela `Exercises`
+### Tabela `exercises`
 - `id` INT PK
-- `day_id` INT FK -> WorkoutDays.id
-- `name` VARCHAR(100)
+- `day_id` INT FK -> workout_days.id
+- `name` VARCHAR(200)
 - `sets` INT
-- `reps` VARCHAR(10)
+- `completed_sets` INT DEFAULT 0
+- `reps` VARCHAR(100)
 - `rest_time_seconds` INT
 
 ---
 
 ## Strategia auth (JWT)
 
-System implementuje autentykacje oparta o tokeny JWT (JSON Web Tokens).
+Autentykacja jest w pelni zaimplementowana w **User Service**.
 
-- **User Service**: Odpowiada za rejestracje, logowanie oraz generowanie tokenow JWT.
+- **User Service**: Odpowiada za rejestracje (`POST /api/users/register`), logowanie (`POST /api/users/login`) i walidacje tokenu (`GET /api/users/me`).
 - **Haszowanie**: Hasla sa przechowywane w postaci zhaszowanej przy uzyciu biblioteki `bcrypt`.
-- **Walidacja**: Inne serwisy moga weryfikowac tokeny JWT w celu autoryzacji uzytkownika.
+- **Token JWT**: Podpisywany `JWT_SECRET`, domyslny czas waznosci 30 minut (konfigurowalny przez `JWT_EXPIRE_MINUTES`).
+- **Serwisy domenowe** (`workout-plan`, `ai-coach`): Nie waliduja JWT samodzielnie. W docelowej architekturze weryfikacja odbywa sie na brzegu systemu (API Gateway/Nginx), a do serwisow trafia juz zweryfikowany `user_id`.

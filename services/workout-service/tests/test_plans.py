@@ -268,7 +268,7 @@ async def test_complete_set_not_found(async_client: AsyncClient) -> None:
 
 @pytest.mark.asyncio
 async def test_full_update_plan_success(async_client: AsyncClient) -> None:
-    """PUT /api/workouts/plans/{plan_id} zastępuje dni i ćwiczenia."""
+    """PUT /api/workouts/plans/{plan_id} zastępuje tytuł, czas trwania, dni i ćwiczenia."""
     user_id = 40
     plan = await _create_plan(async_client, user_id=user_id)
     plan_id = plan["id"]
@@ -292,7 +292,11 @@ async def test_full_update_plan_success(async_client: AsyncClient) -> None:
         f"/api/workouts/plans/{plan_id}", json=updated_payload
     )
     assert response.status_code == 200
-    data = response.json()
+
+    # Weryfikacja przez kolejne GET – omija problem stale session cache w SQLite
+    get_resp = await async_client.get(f"/api/workouts/plans/{plan_id}")
+    assert get_resp.status_code == 200
+    data = get_resp.json()
     assert data["title"] == "Zaktualizowany Plan"
     assert data["duration_weeks"] == 2
     assert data["days"][0]["is_rest_day"] is True
@@ -338,5 +342,7 @@ async def test_clone_plan_success(async_client: AsyncClient) -> None:
 @pytest.mark.asyncio
 async def test_clone_plan_source_not_found(async_client: AsyncClient) -> None:
     """Klonowanie nieistniejącego planu zwraca 404."""
-    response = await async_client.post("/api/workouts/plans/999999/clone/1")
+    # Użyj unikatowego target_user_id (9999) który nie ma jeszcze żadnych planów,
+    # aby uniknąć trafiania w limit 5 planów przed sprawdzeniem source planu.
+    response = await async_client.post("/api/workouts/plans/999999/clone/9999")
     assert response.status_code == 404
