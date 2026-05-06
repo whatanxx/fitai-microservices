@@ -11,13 +11,30 @@ FitAI to aplikacja mikroserwisowa umożliwiająca personalizowane planowanie tre
 
 ---
 
+## 🌐 Aplikacja na produkcji (GCP)
+
+Aplikacja jest wdrożona na **Google Cloud Run** w regionie `us-central1`.
+
+> 🔗 **Link do działającej aplikacji:** <!-- wklej tu URL frontendu po deploymencie -->
+
+> ℹ️ Poniższe linki należy uzupełnić po każdym deploymencie (URL nadawany jest przez Google Cloud Run).
+
+| Serwis | URL na produkcji |
+|---|---|
+| **Frontend** | <!-- URL frontendu np. https://frontend-xxx.run.app --> |
+| **User Service API** | <!-- URL np. https://user-service-xxx.run.app/docs --> |
+| **Workout Service API** | <!-- URL np. https://workout-service-xxx.run.app/docs --> |
+| **AI Coach Service API** | <!-- URL np. https://ai-coach-service-xxx.run.app/docs --> |
+
+---
+
 ## 🎯 Cel projektu
 
 - Zarządzanie profilem użytkownika (dane wejściowe do generowania planu)
 - Przeglądanie i śledzenie realizacji planów treningowych
-- Generowanie spersonalizowanych planów przez AI Coach Service
+- Generowanie spersonalizowanych planów przez AI Coach Service (Google Gemini / OpenAI)
 - Nowoczesny interfejs React
-- Deploy na AWS/GCP z CI/CD przez GitHub Actions
+- Deploy na GCP Cloud Run z automatycznym CI/CD przez GitHub Actions
 
 ---
 
@@ -125,23 +142,40 @@ Szczegółowe zasady pracy z AI: [`docs/AI_TOOLS.md`](docs/AI_TOOLS.md)
 
 ## 🧪 Testy
 
-Każdy serwis backendowy posiada własny zestaw testów w folderze `tests/`. Testy uruchamia się z poziomu folderu serwisu:
+Każdy serwis backendowy posiada własny zestaw testów w folderze `tests/`. Testy używają **SQLite** zamiast PostgreSQL, dzięki czemu działają lokalnie bez uruchomionej bazy danych.
 
 ```bash
-# Uruchomienie testów
-pytest
+# Instalacja zależności (w folderze serwisu)
+pip install -r requirements.txt
 
-# Testy z raportem pokrycia
-pytest --cov=app tests/
+# Uruchomienie testów
+PYTHONPATH=. pytest
+
+# Testy z raportem pokrycia kodu
+PYTHONPATH=. pytest --cov=app tests/ --cov-report=term-missing
 ```
 
-| Serwis | Folder testów | Pliki testów |
-|---|---|---|
-| **User Service** | `services/user-service/tests/` | `test_health.py`, `test_auth.py`, `test_profiles.py` |
-| **Workout Service** | `services/workout-service/tests/` | `test_health.py`, `test_plans.py` |
-| **AI Coach Service** | `services/ai-coach-service/tests/` | `test_health.py`, `test_ai_coach.py` |
+### Wyniki testów (aktualne)
 
-Szczegółowa strategia testowania: [`docs/TESTOWANIE.md`](docs/TESTOWANIE.md)
+| Serwis | Liczba testów | Coverage | Folder testów |
+|---|---|---|---|
+| **User Service** | 23 | **90%** | `services/user-service/tests/` |
+| **Workout Service** | 25 | **55%** | `services/workout-service/tests/` |
+| **AI Coach Service** | 17 | **80%** | `services/ai-coach-service/tests/` |
+| **Łącznie** | **65** | — | |
+
+### Biblioteki testowe
+
+| Biblioteka | Zastosowanie |
+|---|---|
+| `pytest` + `pytest-asyncio` | Framework testowy, obsługa `async def` |
+| `httpx` + `ASGITransport` | Wywoływanie endpointów FastAPI bez serwera HTTP |
+| `pytest-cov` | Raporty pokrycia kodu |
+| `unittest.mock` | Atrapy (mocki) dla Gemini API, OpenAI API, httpx |
+| `SQLite` / `aiosqlite` | Izolowana baza danych tylko dla testów |
+| `mypy` | Statyczna analiza typów |
+
+Szczegółowa strategia testowania i pełne wyniki coverage: [`docs/TESTOWANIE.md`](docs/TESTOWANIE.md)
 
 ---
 
