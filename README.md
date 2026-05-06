@@ -15,14 +15,16 @@ FitAI to aplikacja mikroserwisowa umożliwiająca personalizowane planowanie tre
 
 Aplikacja jest wdrożona na **Google Cloud Run** w regionie `us-central1`.
 
-> 🔗 **Link do działającej aplikacji:** *(wklej tu URL po deploymencie)*
+> 🔗 **Link do działającej aplikacji:** <!-- wklej tu URL frontendu po deploymencie -->
+
+> ℹ️ Poniższe linki należy uzupełnić po każdym deploymencie (URL nadawany jest przez Google Cloud Run).
 
 | Serwis | URL na produkcji |
 |---|---|
-| **Frontend** | *(link do frontendu)* |
-| **User Service API** | *(link `/docs`)* |
-| **Workout Service API** | *(link `/docs`)* |
-| **AI Coach Service API** | *(link `/docs`)* |
+| **Frontend** | <!-- URL frontendu np. https://frontend-xxx.run.app --> |
+| **User Service API** | <!-- URL np. https://user-service-xxx.run.app/docs --> |
+| **Workout Service API** | <!-- URL np. https://workout-service-xxx.run.app/docs --> |
+| **AI Coach Service API** | <!-- URL np. https://ai-coach-service-xxx.run.app/docs --> |
 
 ---
 
